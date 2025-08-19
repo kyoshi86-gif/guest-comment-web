@@ -1,14 +1,16 @@
 // Konfigurasi Supabase
 const SUPABASE_URL = "https://drdflrzsvfakdnhqniaa.supabase.co"; // ganti dengan URL project
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8"; // ganti dengan anon key
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// bikin client supabase
+// 1. ambil createClient dari library supabase
 const { createClient } = supabase;
+
+// 2. bikin client global (penting: harus sebelum saveComment dipanggil!)
 const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- SIMPAN DATA ---
 async function saveComment() {
+  console.log("Tombol simpan diklik ✅"); // cek di console
   const guestname = document.getElementById("guestname").value;
   const table_number = document.getElementById("table_number").value;
   const rating = document.getElementById("rating").value;
@@ -76,5 +78,5 @@ function clearForm() {
   document.getElementById("date").value = "";
 }
 
-// --- LOAD OTOMATIS SAAT HALAMAN DIBUKA ---
+// --- LOAD DATA SAAT HALAMAN DIBUKA ---
 window.onload = loadComments;
