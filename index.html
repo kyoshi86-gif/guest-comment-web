@@ -1,105 +1,174 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Guest Comment Card</title>
+  <meta charset="UTF-8">
+  <title>Form Guest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    /* === STYLE UTAMA === */
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f7fc;
-      color: #333;
-      padding: 20px;
-    }
-    h2 { color: #004080; }
-    .form-container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      margin-bottom: 30px;
-    }
-    label { display: block; margin-top: 10px; font-weight: bold; }
-    input, textarea, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      border: none;
-      background: #004080;
+      font-family: Segoe UI, Tahoma, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
       color: #fff;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
+      margin: 0;
+      padding: 0;
     }
-    button:hover { background: #0066cc; }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #f4f6f9;
+      color: #333;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #1e3c72;
+      font-weight: bold;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #1e3c72;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: border 0.2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #2a5298;
+      box-shadow: 0 0 4px rgba(42,82,152,0.5);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .btn {
+      display: inline-block;
+      background: #2a5298;
+      color: #fff;
+      padding: 12px 25px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background: #1e3c72;
+    }
+
+    /* === TABLE === */
+    .table-container {
+      margin-top: 30px;
+      overflow-x: auto;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      border-radius: 12px;
+      overflow: hidden;
     }
+
     th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: left;
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+      font-size: 14px;
     }
-    th { background: #004080; color: #fff; }
-    tr:nth-child(even) { background: #f9f9f9; }
+
+    th {
+      background: #1e3c72;
+      color: #fff;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+
+    tr:hover {
+      background: #f1f5ff;
+    }
+
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Form Guest</h1>
+    <div class="form-group">
+      <label for="guestname">Nama Tamu</label>
+      <input type="text" id="guestname" placeholder="Masukkan nama tamu">
+    </div>
 
-  <h2>Form Guest Comment</h2>
-  <div class="form-container">
-    <label>Nama Tamu:</label>
-    <input type="text" id="guestname" />
+    <div class="form-group">
+      <label for="table_number">No Meja</label>
+      <input type="text" id="table_number" placeholder="Nomor meja">
+    </div>
 
-    <label>No Meja:</label>
-    <input type="text" id="table_number" />
+    <div class="form-group">
+      <label for="rating">Rating</label>
+      <select id="rating">
+        <option value="">Pilih rating</option>
+        <option value="1">1 - Sangat Buruk</option>
+        <option value="2">2 - Buruk</option>
+        <option value="3">3 - Cukup</option>
+        <option value="4">4 - Bagus</option>
+        <option value="5">5 - Sangat Bagus</option>
+      </select>
+    </div>
 
-    <label>Rating:</label>
-    <select id="rating">
-      <option value="">-- pilih --</option>
-      <option value="1">1 - Sangat Buruk</option>
-      <option value="2">2 - Buruk</option>
-      <option value="3">3 - Cukup</option>
-      <option value="4">4 - Baik</option>
-      <option value="5">5 - Sangat Baik</option>
-    </select>
+    <div class="form-group">
+      <label for="comments">Komentar</label>
+      <textarea id="comments" placeholder="Tulis komentar..."></textarea>
+    </div>
 
-    <label>Komentar:</label>
-    <textarea id="comments"></textarea>
+    <div class="form-group">
+      <label for="date">Tanggal</label>
+      <input type="date" id="date">
+    </div>
 
-    <label>Tanggal:</label>
-    <input type="date" id="date" />
+    <button class="btn" onclick="saveComment()">💾 Simpan</button>
 
-    <button onclick="saveComment()">Simpan</button>
+    <div class="table-container">
+      <table id="reportTable">
+        <thead>
+          <tr>
+            <th>Nama Tamu</th>
+            <th>No Meja</th>
+            <th>Rating</th>
+            <th>Komentar</th>
+            <th>Tanggal</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
-  <h2>Laporan Guest Comment</h2>
-  <table id="reportTable">
-    <thead>
-      <tr>
-        <th>Nama Tamu</th>
-        <th>No Meja</th>
-        <th>Rating</th>
-        <th>Komentar</th>
-        <th>Tanggal</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- data otomatis masuk sini -->
-    </tbody>
-  </table>
-
-  <!-- Supabase Client -->
+  <!-- Supabase SDK -->
   <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <!-- App logic -->
   <script src="app.js"></script>
 </body>
 </html>
