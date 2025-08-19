@@ -1,29 +1,27 @@
-// Inisialisasi Supabase
-const { createClient } = supabase;
-const supabaseClient = createClient(
-  "https://drdflrzsvfakdnhqniaa.supabase.co", // ganti dengan URL Supabase kamu
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8"                         // ganti dengan anon public key
-);
+// Konfigurasi Supabase
+const SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"; // ganti dengan URL project
+const SUPABASE_KEY = "YOUR_ANON_KEY"; // ganti dengan anon key
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ==== INSERT ====
+// Simpan Data
 async function saveComment() {
   const guestname = document.getElementById("guestname").value;
-  const room = document.getElementById("room").value;
+  const table_number = document.getElementById("table_number").value;
+  const rating = document.getElementById("rating").value;
   const comments = document.getElementById("comments").value;
-  const rating = parseInt(document.getElementById("rating").value) || null;
-  const date = new Date().toISOString().split("T")[0]; // yyyy-mm-dd
+  const date = document.getElementById("date").value;
 
-  if (!guestname || !room) {
-    alert("Nama tamu dan No Meja wajib diisi!");
+  if (!guestname || !rating || !date) {
+    alert("Isi minimal Nama, Rating, dan Tanggal!");
     return;
   }
 
-  const { error } = await supabaseClient.from("guest_comments").insert([
+  const { error } = await supabase.from("guest_comments").insert([
     {
       nama_tamu: guestname,
-      kamar: room,
-      komentar: comments,
+      kamar: table_number,  // dipakai untuk No Meja
       rating: rating,
+      komentar: comments,
       tgl: date,
     },
   ]);
@@ -37,111 +35,42 @@ async function saveComment() {
   }
 }
 
-// ==== READ ====
+// Tampilkan Data
 async function loadComments() {
-  const table = document.getElementById("commentsTableBody");
-  if (!table) return;
-  table.innerHTML = "";
-
-  const { data, error } = await supabaseClient
+  const { data, error } = await supabase
     .from("guest_comments")
     .select("*")
     .order("id", { ascending: false });
 
   if (error) {
-    console.error("Load error:", error);
+    console.error("Error load:", error.message);
     return;
   }
+
+  const tbody = document.querySelector("#reportTable tbody");
+  tbody.innerHTML = "";
 
   data.forEach((row) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${row.id}</td>
-      <td>${row.tgl || ""}</td>
-      <td>${row.nama_tamu || ""}</td>
-      <td>${row.kamar || ""}</td>
-      <td>${row.komentar || ""}</td>
-      <td>${row.rating || ""}</td>
-      <td>
-        <button onclick="editComment(${row.id}, '${row.nama_tamu}', '${row.kamar}', '${row.komentar}', ${row.rating})">Edit</button>
-        <button onclick="deleteComment(${row.id})">Hapus</button>
-      </td>
+      <td>${row.nama_tamu}</td>
+      <td>${row.kamar}</td>
+      <td>${row.rating}</td>
+      <td>${row.komentar}</td>
+      <td>${row.tgl}</td>
     `;
-    table.appendChild(tr);
+    tbody.appendChild(tr);
   });
 }
 
-// ==== UPDATE ====
-async function editComment(id, nama, kamar, komentar, rating) {
-  document.getElementById("guestname").value = nama;
-  document.getElementById("room").value = kamar;
-  document.getElementById("comments").value = komentar;
-  document.getElementById("rating").value = rating;
-
-  // Ubah tombol simpan jadi update
-  const saveBtn = document.querySelector("button[onclick='saveComment()']");
-  saveBtn.innerText = "Update";
-  saveBtn.setAttribute("onclick", `updateComment(${id})`);
-}
-
-async function updateComment(id) {
-  const guestname = document.getElementById("guestname").value;
-  const room = document.getElementById("room").value;
-  const comments = document.getElementById("comments").value;
-  const rating = parseInt(document.getElementById("rating").value) || null;
-
-  const { error } = await supabaseClient
-    .from("guest_comments")
-    .update({
-      nama_tamu: guestname,
-      kamar: room,
-      komentar: comments,
-      rating: rating,
-    })
-    .eq("id", id);
-
-  if (error) {
-    alert("Error update: " + error.message);
-  } else {
-    alert("Data berhasil diupdate");
-    resetSaveButton();
-    clearForm();
-    loadComments();
-  }
-}
-
-// ==== DELETE ====
-async function deleteComment(id) {
-  if (!confirm("Yakin hapus data ini?")) return;
-
-  const { error } = await supabaseClient
-    .from("guest_comments")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    alert("Error delete: " + error.message);
-  } else {
-    alert("Data berhasil dihapus");
-    loadComments();
-  }
-}
-
-// ==== UTIL ====
+// Hapus form
 function clearForm() {
   document.getElementById("guestname").value = "";
-  document.getElementById("room").value = "";
-  document.getElementById("comments").value = "";
+  document.getElementById("table_number").value = "";
   document.getElementById("rating").value = "";
+  document.getElementById("comments").value = "";
+  document.getElementById("date").value = "";
 }
 
-function resetSaveButton() {
-  const saveBtn = document.querySelector("button[onclick^='updateComment']");
-  if (saveBtn) {
-    saveBtn.innerText = "Simpan";
-    saveBtn.setAttribute("onclick", "saveComment()");
-  }
-}
-
-// Load data saat pertama kali halaman dibuka
-document.addEventListener("DOMContentLoaded", loadComments);
+// Load data saat halaman dibuka
+window.onload = loadComments;
