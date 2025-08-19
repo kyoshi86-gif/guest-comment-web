@@ -1,0 +1,103 @@
+/* === Warna tema mirip VBA formGuest === */
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f8ff; /* biru muda */
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+}
+
+h2, h3 {
+  text-align: center;
+  color: #004080;
+}
+
+.form-box {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: bold;
+  color: #004080;
+}
+
+input, select, textarea {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+textarea {
+  resize: none;
+}
+
+button {
+  background: #28a745; /* hijau */
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #218838;
+}
+
+/* === Tabel === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+table th {
+  background: #004080;
+  color: white;
+}
+
+table tr:nth-child(even) {
+  background: #f2f2f2;
+}
+
+table button {
+  margin: 2px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+table button:first-child {
+  background: #007bff;
+}
+
+table button:first-child:hover {
+  background: #0056b3;
+}
+
+table button:last-child {
+  background: #dc3545;
+}
+
+table button:last-child:hover {
+  background: #b02a37;
+}
