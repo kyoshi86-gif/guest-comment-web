@@ -1,103 +1,66 @@
-/* === Warna tema mirip VBA formGuest === */
 body {
   font-family: Arial, sans-serif;
-  background: #f0f8ff; /* biru muda */
+  background-color: #eef6ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
   margin: 0;
-  padding: 20px;
 }
 
 .container {
-  max-width: 900px;
-  margin: auto;
+  width: 420px;
   background: #ffffff;
-  padding: 20px;
+  padding: 20px 25px;
   border-radius: 12px;
-  box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-h2, h3 {
+h1 {
   text-align: center;
-  color: #004080;
-}
-
-.form-box {
-  display: grid;
-  gap: 10px;
+  color: #003366;
   margin-bottom: 20px;
 }
 
 label {
+  display: block;
+  margin-top: 10px;
   font-weight: bold;
-  color: #004080;
+  color: #003366;
 }
 
-input, select, textarea {
+input, textarea, select {
+  width: 100%;
   padding: 8px;
-  border: 1px solid #ccc;
+  margin-top: 5px;
+  border: 1px solid #bbb;
   border-radius: 6px;
-  font-size: 14px;
 }
 
-textarea {
-  resize: none;
+fieldset {
+  margin-top: 15px;
+  border: 1px solid #003366;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+legend {
+  font-weight: bold;
+  color: #003366;
 }
 
 button {
-  background: #28a745; /* hijau */
-  color: white;
-  font-weight: bold;
+  width: 100%;
+  padding: 12px;
+  background-color: #0066cc;
   border: none;
-  padding: 10px;
+  color: white;
+  font-size: 16px;
   border-radius: 8px;
+  margin-top: 20px;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
 button:hover {
-  background: #218838;
-}
-
-/* === Tabel === */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-table th, table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-}
-
-table th {
-  background: #004080;
-  color: white;
-}
-
-table tr:nth-child(even) {
-  background: #f2f2f2;
-}
-
-table button {
-  margin: 2px;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-}
-
-table button:first-child {
-  background: #007bff;
-}
-
-table button:first-child:hover {
-  background: #0056b3;
-}
-
-table button:last-child {
-  background: #dc3545;
-}
-
-table button:last-child:hover {
-  background: #b02a37;
+  background-color: #004d99;
 }

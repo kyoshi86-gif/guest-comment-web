@@ -4,75 +4,58 @@
   <meta charset="UTF-8">
   <title>Guest Comment Card</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
   <script defer src="app.js"></script>
 </head>
 <body>
   <div class="container">
-    <h2>Guest Comment Card</h2>
+    <h1>Guest Comment Card</h1>
     <form id="guestForm">
-      <label>Tanggal:</label>
+      
+      <label for="tgl">Tanggal:</label>
       <input type="date" id="tgl" required>
-
-      <label>Jam:</label>
+      
+      <label for="jam">Jam:</label>
       <input type="time" id="jam" required>
+      
+      <label for="no_meja">No Meja:</label>
+      <input type="text" id="no_meja" placeholder="Masukkan nomor meja" required>
 
-      <label>No Meja:</label>
-      <input type="text" id="meja" placeholder="Nomor Meja" required>
+      <label for="nama_tamu">Nama Tamu:</label>
+      <input type="text" id="nama_tamu" placeholder="Masukkan nama tamu" required>
 
-      <label>Nama Tamu:</label>
-      <input type="text" id="nama" placeholder="Nama lengkap" required>
+      <label for="komentar">Komentar:</label>
+      <textarea id="komentar" rows="3" placeholder="Tulis komentar..."></textarea>
 
-      <label>Komentar:</label>
-      <textarea id="komentar" rows="3" placeholder="Masukkan komentar Anda" required></textarea>
-
-      <label>Rating:</label>
+      <label for="rating">Rating:</label>
       <select id="rating" required>
-        <option value="">Pilih</option>
+        <option value="">Pilih rating</option>
         <option value="1">1 ⭐</option>
-        <option value="2">2 ⭐</option>
-        <option value="3">3 ⭐</option>
-        <option value="4">4 ⭐</option>
-        <option value="5">5 ⭐</option>
+        <option value="2">2 ⭐⭐</option>
+        <option value="3">3 ⭐⭐⭐</option>
+        <option value="4">4 ⭐⭐⭐⭐</option>
+        <option value="5">5 ⭐⭐⭐⭐⭐</option>
       </select>
 
       <fieldset>
         <legend>Asal:</legend>
-        <label><input type="radio" name="asal" value="Yogyakarta" required> Yogyakarta</label>
+        <label><input type="radio" name="asal" value="Yogyakarta" checked> Yogyakarta</label>
         <label><input type="radio" name="asal" value="Luar Kota"> Luar Kota</label>
         <label><input type="radio" name="asal" value="Luar Negeri"> Luar Negeri</label>
       </fieldset>
 
       <fieldset>
         <legend>Acara:</legend>
-        <label><input type="radio" name="acara" value="Instagram" required> Instagram</label>
-        <label><input type="radio" name="acara" value="Tiktok"> TikTok</label>
+        <label><input type="radio" name="acara" value="Instagram" checked> Instagram</label>
+        <label><input type="radio" name="acara" value="TikTok"> TikTok</label>
         <label><input type="radio" name="acara" value="Google"> Google</label>
         <label><input type="radio" name="acara" value="Rekomendasi Teman"> Rekomendasi Teman</label>
-        <label>
-          <input type="radio" name="acara" value="Lainnya"> Lainnya
-          <input type="text" id="acaraLainnya" placeholder="Isi jika lainnya" disabled>
-        </label>
+        <label><input type="radio" name="acara" value="Lainnya" id="acaraLainnyaRadio"> Lainnya</label>
+        <input type="text" id="acara_lainnya" placeholder="Isi jika memilih Lainnya" disabled>
       </fieldset>
 
-      <button type="button" id="btnSave">Simpan</button>
+      <button type="button" id="saveBtn">Simpan</button>
     </form>
-
-    <h3>Data Tamu</h3>
-    <table id="commentTable" border="1">
-      <thead>
-        <tr>
-          <th>Tanggal</th>
-          <th>Jam</th>
-          <th>No Meja</th>
-          <th>Nama</th>
-          <th>Komentar</th>
-          <th>Rating</th>
-          <th>Asal</th>
-          <th>Acara</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
   </div>
 </body>
 </html>
