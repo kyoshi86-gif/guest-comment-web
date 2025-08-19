@@ -3,7 +3,11 @@ const SUPABASE_URL = "https://drdflrzsvfakdnhqniaa.supabase.co"; // ganti dengan
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8"; // ganti dengan anon key
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Simpan Data
+// bikin client supabase
+const { createClient } = supabase;
+const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// --- SIMPAN DATA ---
 async function saveComment() {
   const guestname = document.getElementById("guestname").value;
   const table_number = document.getElementById("table_number").value;
@@ -16,10 +20,10 @@ async function saveComment() {
     return;
   }
 
-  const { error } = await supabase.from("guest_comments").insert([
+  const { error } = await client.from("guest_comments").insert([
     {
       nama_tamu: guestname,
-      kamar: table_number,  // dipakai untuk No Meja
+      kamar: table_number,
       rating: rating,
       komentar: comments,
       tgl: date,
@@ -27,17 +31,17 @@ async function saveComment() {
   ]);
 
   if (error) {
-    alert("Error insert: " + error.message);
+    alert("❌ Error insert: " + error.message);
   } else {
-    alert("Data berhasil disimpan");
+    alert("✅ Data berhasil disimpan");
     clearForm();
     loadComments();
   }
 }
 
-// Tampilkan Data
+// --- TAMPILKAN DATA ---
 async function loadComments() {
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("guest_comments")
     .select("*")
     .order("id", { ascending: false });
@@ -63,7 +67,7 @@ async function loadComments() {
   });
 }
 
-// Hapus form
+// --- RESET FORM ---
 function clearForm() {
   document.getElementById("guestname").value = "";
   document.getElementById("table_number").value = "";
@@ -72,5 +76,5 @@ function clearForm() {
   document.getElementById("date").value = "";
 }
 
-// Load data saat halaman dibuka
+// --- LOAD OTOMATIS SAAT HALAMAN DIBUKA ---
 window.onload = loadComments;
