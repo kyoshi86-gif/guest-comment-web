@@ -2,9 +2,16 @@
 // Ganti dengan kredensial dari Supabase Project Settings
 const SUPABASE_URL = "https://drdflrzsvfakdnhqniaa.supabase.co"; // ganti dengan URL project
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8"; // ganti dengan anon key
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { createClient } from '@supabase/supabase-js';
 
-const form = document.getElementById("guest_comments");
+const supabase = createClient('URL_SUPABASE', 'ANON_KEY');
+
+// Panggil supabase setelah ini
+supabase
+  .from('guest_comments')
+  .select('*')
+  .then(({ data, error }) => { … });
+
 
 // Simpan data
 async function saveComment(e) {
