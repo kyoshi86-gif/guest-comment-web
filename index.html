@@ -1,81 +1,168 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Guest Comment Card</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
-  <script defer src="app.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guest Card</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div class="container">
-    <h1>Guest Comment Card</h1>
-    <form id="guestForm">
-      
-      <label for="tgl">Tanggal:</label>
-      <input type="date" id="tgl" required>
-      
-      <label for="jam">Jam:</label>
-      <input type="time" id="jam" required>
-      
-      <label for="no_meja">No Meja:</label>
-      <input type="text" id="no_meja" placeholder="Masukkan nomor meja" required>
+    <header>
+      <h1>Roaster & Bear</h1>
+    </header>
 
-      <label for="nama_tamu">Nama Tamu:</label>
-      <input type="text" id="nama_tamu" placeholder="Masukkan nama tamu" required>
+    <section class="form-section">
+      <div class="form-left">
+        <!-- Bagian Tanggal, Jam, Meja -->
+        <div class="row">
+          <label>Tanggal</label><input type="date" id="tgl">
+          <label>Jam</label><input type="time" id="jam">
+          <label>No Meja</label><input type="text" id="no_meja">
+        </div>
 
-      <label for="komentar">Komentar:</label>
-      <textarea id="komentar" rows="3" placeholder="Tulis komentar..."></textarea>
+        <!-- Nama -->
+        <div class="row">
+          <label>Nama</label><input type="text" id="nama_tamu">
+        </div>
 
-      <label for="rating">Rating:</label>
-      <select id="rating" required>
-        <option value="">Pilih rating</option>
-        <option value="1">1 ⭐</option>
-        <option value="2">2 ⭐⭐</option>
-        <option value="3">3 ⭐⭐⭐</option>
-        <option value="4">4 ⭐⭐⭐⭐</option>
-        <option value="5">5 ⭐⭐⭐⭐⭐</option>
-      </select>
+        <!-- 1. Asal -->
+        <fieldset>
+          <legend>1. Asal</legend>
+          <label><input type="radio" name="asal" value="Yogyakarta"> Yogyakarta</label>
+          <label><input type="radio" name="asal" value="Luar Kota"> Luar Kota</label>
+          <label><input type="radio" name="asal" value="Luar Negeri"> Luar Negeri</label>
+        </fieldset>
 
-      <fieldset>
-        <legend>Asal:</legend>
-        <label><input type="radio" name="asal" value="Yogyakarta" checked> Yogyakarta</label>
-        <label><input type="radio" name="asal" value="Luar Kota"> Luar Kota</label>
-        <label><input type="radio" name="asal" value="Luar Negeri"> Luar Negeri</label>
-      </fieldset>
+        <!-- 2. Media Sosial -->
+        <fieldset>
+          <legend>2. Media Sosial</legend>
+          <label><input type="radio" name="acara" value="Instagram"> Instagram</label>
+          <label><input type="radio" name="acara" value="Tiktok"> Tiktok</label>
+          <label><input type="radio" name="acara" value="Google"> Google</label>
+          <label><input type="radio" name="acara" value="Rekomendasi Teman"> Rekomendasi Teman</label>
+          <label><input type="radio" name="acara" value="Lainnya"> Lainnya</label>
+          <input type="text" id="acara_lainnya" placeholder="Lainnya...">
+        </fieldset>
 
-      <fieldset>
-        <legend>Acara:</legend>
-        <label><input type="radio" name="acara" value="Instagram" checked> Instagram</label>
-        <label><input type="radio" name="acara" value="TikTok"> TikTok</label>
-        <label><input type="radio" name="acara" value="Google"> Google</label>
-        <label><input type="radio" name="acara" value="Rekomendasi Teman"> Rekomendasi Teman</label>
-        <label><input type="radio" name="acara" value="Lainnya" id="acaraLainnyaRadio"> Lainnya</label>
-        <input type="text" id="acara_lainnya" placeholder="Isi jika memilih Lainnya" disabled>
-      </fieldset>
+        <!-- 3. Acara -->
+        <fieldset>
+          <legend>3. Acara di Roaster and Bear</legend>
+          <label><input type="radio" name="event" value="Lunch"> Lunch</label>
+          <label><input type="radio" name="event" value="Dinner"> Dinner</label>
+          <label><input type="radio" name="event" value="Gathering"> Gathering</label>
+          <label><input type="radio" name="event" value="Meeting"> Meeting</label>
+          <label><input type="radio" name="event" value="Celebration"> Celebration</label>
+          <label><input type="radio" name="event" value="Lainnya"> Lainnya</label>
+          <input type="text" id="event_lainnya" placeholder="Lainnya...">
+        </fieldset>
 
-      <button type="submit" class="btn">Simpan</button>
-    </form>
+        <!-- 4. Rentang Usia -->
+        <fieldset>
+          <legend>4. Rentang Usia</legend>
+          <label><input type="radio" name="usia" value="18-24"> 18-24</label>
+          <label><input type="radio" name="usia" value="25-35"> 25-35</label>
+          <label><input type="radio" name="usia" value="36-45"> 36-45</label>
+          <label><input type="radio" name="usia" value="46-60"> 46-60</label>
+          <label><input type="radio" name="usia" value=">60"> >60</label>
+        </fieldset>
+      </div>
+
+      <!-- Bagian Kanan Rating + Tabel -->
+      <div class="form-right">
+        <table class="rating-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Very Bad</th>
+              <th>Poor</th>
+              <th>Fair</th>
+              <th>Good</th>
+              <th>Excellent</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Food Quality</td>
+              <td><input type="radio" name="food" value="1"></td>
+              <td><input type="radio" name="food" value="2"></td>
+              <td><input type="radio" name="food" value="3"></td>
+              <td><input type="radio" name="food" value="4"></td>
+              <td><input type="radio" name="food" value="5"></td>
+            </tr>
+            <tr>
+              <td>Beverage Quality</td>
+              <td><input type="radio" name="beverage" value="1"></td>
+              <td><input type="radio" name="beverage" value="2"></td>
+              <td><input type="radio" name="beverage" value="3"></td>
+              <td><input type="radio" name="beverage" value="4"></td>
+              <td><input type="radio" name="beverage" value="5"></td>
+            </tr>
+            <tr>
+              <td>Serving Speed</td>
+              <td><input type="radio" name="speed" value="1"></td>
+              <td><input type="radio" name="speed" value="2"></td>
+              <td><input type="radio" name="speed" value="3"></td>
+              <td><input type="radio" name="speed" value="4"></td>
+              <td><input type="radio" name="speed" value="5"></td>
+            </tr>
+            <tr>
+              <td>Service</td>
+              <td><input type="radio" name="service" value="1"></td>
+              <td><input type="radio" name="service" value="2"></td>
+              <td><input type="radio" name="service" value="3"></td>
+              <td><input type="radio" name="service" value="4"></td>
+              <td><input type="radio" name="service" value="5"></td>
+            </tr>
+            <tr>
+              <td>Cleanliness</td>
+              <td><input type="radio" name="clean" value="1"></td>
+              <td><input type="radio" name="clean" value="2"></td>
+              <td><input type="radio" name="clean" value="3"></td>
+              <td><input type="radio" name="clean" value="4"></td>
+              <td><input type="radio" name="clean" value="5"></td>
+            </tr>
+            <tr>
+              <td>Ambience</td>
+              <td><input type="radio" name="ambience" value="1"></td>
+              <td><input type="radio" name="ambience" value="2"></td>
+              <td><input type="radio" name="ambience" value="3"></td>
+              <td><input type="radio" name="ambience" value="4"></td>
+              <td><input type="radio" name="ambience" value="5"></td>
+            </tr>
+            <tr>
+              <td>Price</td>
+              <td><input type="radio" name="price" value="1"></td>
+              <td><input type="radio" name="price" value="2"></td>
+              <td><input type="radio" name="price" value="3"></td>
+              <td><input type="radio" name="price" value="4"></td>
+              <td><input type="radio" name="price" value="5"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Komentar -->
+        <div class="row">
+          <label>Others comment or suggestions?</label>
+          <textarea id="komentar"></textarea>
+        </div>
+
+        <!-- Tombol -->
+        <div class="buttons">
+          <button id="btnSave">Save</button>
+          <button id="btnUpdate">Update</button>
+          <button id="btnDelete">Delete</button>
+          <button id="btnCancel">Cancel</button>
+          <button id="btnClose">Close</button>
+          <button id="btnReport">Report</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <small>Versi 1.2</small>
+    </footer>
   </div>
-
-  <div class="container">
-    <h2>Data Guest Comments</h2>
-    <table border="1" width="100%">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Tanggal</th>
-          <th>Jam</th>
-          <th>Meja</th>
-          <th>Nama</th>
-          <th>Asal</th>
-          <th>Acara</th>
-          <th>Rating</th>
-          <th>Komentar</th>
-        </tr>
-      </thead>
-      <tbody id="commentTableBody"></tbody>
-    </table>
-  </div>
+  <script src="/app.js"></script>
 </body>
 </html>
