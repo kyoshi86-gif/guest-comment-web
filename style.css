@@ -1,57 +1,154 @@
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+:root{
+  --green:#0b3a1d;      /* hijau gelap background */
+  --gold:#b9915b;       /* emas tombol/header */
+  --gold-dark:#9f7a41;
+  --input:#f5e6cc;      /* krem untuk field */
+  --white:#ffffff;
 }
 
-/* Body full screen tanpa scroll */
+html,body{height:100%}
 body {
   font-family: Arial, sans-serif;
   background-color: #eef6ff;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;       /* penuh layar */
-  width: 100vw;        /* penuh lebar */
-  overflow: hidden;    /* cegah scroll */
+  height: 100vh;     /* penuh 1 layar */
+  margin: 0;
+  overflow: hidden;  /* cegah scroll */
 }
 
-/* Kontainer pas tengah */
 .container {
   width: 100%;
-  max-width: 420px;      /* batasi supaya tidak terlalu lebar */
+  max-width: 420px;   /* lebar tetap */
+  max-height: 95vh;   /* tinggi supaya muat layar */
   background: #ffffff;
   padding: 20px 25px;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-
-  /* agar tidak bikin scroll horizontal */
-  overflow-x: hidden;
+  overflow-y: auto;   /* kalau isi form panjang, scroll hanya di dalam kotak */
 }
 
-/* Form elemen */
-input, textarea, select {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  border: 1px solid #bbb;
-  border-radius: 6px;
+.gc-wrap{padding:6px}
+
+.gc-header{
+  height:54px;
+  background:var(--gold);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:4px;
+  margin:6px 6px 10px;
+}
+.gc-logo{font-weight:700; letter-spacing:3px;}
+
+.gc-grid{
+  display:grid;
+  grid-template-columns: 40% 35% 25%;
+  gap:14px;
+  margin:0 6px;
 }
 
-/* Tombol */
-button {
-  width: 100%;
-  padding: 12px;
-  background-color: #0066cc;
-  border: none;
-  color: white;
-  font-size: 16px;
-  border-radius: 8px;
-  margin-top: 20px;
-  cursor: pointer;
+.gc-left,.gc-mid,.gc-right{
+  background:transparent;
 }
 
-button:hover {
-  background-color: #004d99;
+.gc-row3{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:10px;
+}
+
+.gc-field{margin:8px 0}
+.gc-field label{display:block; margin-bottom:4px; font-weight:700}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+textarea{
+  width:100%;
+  box-sizing:border-box;
+  padding:6px 8px;
+  border:none;
+  border-radius:3px;
+  background:var(--input);
+  color:#333;
+}
+
+.gc-fieldset{
+  border:1px solid var(--white);
+  border-radius:4px;
+  padding:10px;
+  margin:10px 0;
+}
+.gc-fieldset legend{font-weight:700}
+.gc-fieldset label{display:inline-block; min-width:180px; margin:3px 6px 3px 0}
+
+.gc-other{
+  width:100%;
+  margin-top:8px;
+}
+
+.gc-two-col{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.gc-rating{
+  width:100%;
+  border-collapse:collapse;
+  margin-bottom:10px;
+}
+.gc-rating th,.gc-rating td{
+  border:1px solid var(--white);
+  padding:6px;
+  text-align:center;
+}
+
+.gc-buttons{
+  display:flex; 
+  gap:14px; 
+  flex-wrap:wrap; 
+  justify-content:flex-start;
+  margin-top:6px;
+}
+.gold{
+  background:var(--gold);
+  border:none;
+  color:#fff;
+  font-weight:700;
+  padding:8px 16px;
+  border-radius:4px;
+  cursor:pointer;
+}
+.gold:disabled{
+  opacity:.6; cursor:not-allowed;
+}
+.gold:hover:not(:disabled){
+  background:var(--gold-dark);
+}
+
+.gc-right{
+  background:#fff1;
+  border:1px solid #fff5;
+  border-radius:4px;
+  padding:6px;
+}
+.gc-list{
+  width:100%;
+  border-collapse:collapse;
+  background:transparent;
+}
+.gc-list th,.gc-list td{
+  border:1px solid var(--white);
+  padding:4px 6px;
+  text-align:left;
+}
+.gc-right{max-height:600px; overflow:auto}
+
+.gc-footer{
+  text-align:right;
+  margin:10px 10px 0;
+  opacity:.8;
+  font-size:12px;
 }
