@@ -29,8 +29,6 @@ body {
   overflow-y: auto;   /* kalau isi form panjang, scroll hanya di dalam kotak */
 }
 
-.gc-wrap{padding:6px}
-
 .gc-header{
   height:54px;
   background:var(--gold);
