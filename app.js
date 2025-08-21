@@ -7,7 +7,7 @@ const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const form = document.getElementById("guestForm");
 
 // Simpan data
-async function saveComment(e) {
+async function saveComment() {
   e.preventDefault();
 
   const tgl = document.getElementById("tgl").value;
