@@ -7,27 +7,14 @@
 }
 
 html,body{height:100%}
-body {
-  font-family: Arial, sans-serif;
-  background-color: #eef6ff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;     /* penuh 1 layar */
-  margin: 0;
-  overflow: hidden;  /* cegah scroll */
+body{
+  margin:0;
+  background:var(--green);
+  color:var(--white);
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-.container {
-  width: 100%;
-  max-width: 420px;   /* lebar tetap */
-  max-height: 95vh;   /* tinggi supaya muat layar */
-  background: #ffffff;
-  padding: 20px 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  overflow-y: auto;   /* kalau isi form panjang, scroll hanya di dalam kotak */
-}
+.gc-wrap{padding:6px}
 
 .gc-header{
   height:54px;
