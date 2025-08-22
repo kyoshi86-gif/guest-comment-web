@@ -104,7 +104,8 @@ async function loadList(){
   const { data, error } = await sb
     .from('guest_comments')
     .select('id,tgl,jam,no_meja,nama_tamu')
-    .order('inserted_at', { ascending:false })
+    .order('tgl', { ascending: false })   // urutkan tanggal terbaru dulu
+    .order('jam', { ascending: false })   // kalau tanggal sama, urutkan jam
     .limit(200);
 
   if(error){ console.error("Load error:", error.message); return; }
