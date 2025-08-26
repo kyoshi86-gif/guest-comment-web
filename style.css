@@ -162,3 +162,21 @@ textarea{
   opacity:.8;
   font-size:12px;
 }
+
+.gc-close-wrap {
+  display: flex;
+  justify-content: flex-start; /* tombol di kiri */
+  margin-top: 10px;
+}
+.gc-close-wrap .gold {
+  background: var(--gold);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.gc-close-wrap .gold:hover {
+  background: var(--gold-dark);
+}
