@@ -124,6 +124,17 @@ async function loadList(){
   });
 }
 
+// Bersihkan form / reset state
+function clearForm(){
+  form.reset();
+  rowId.value = "";
+  mediaOtherInput.disabled = true;
+  eventOtherInput.disabled = true;
+  btnUpdate.disabled = true;
+  btnDelete.disabled = true;
+  btnSave.disabled   = false;   // ⬅️ aktifkan lagi Save setelah reset
+}
+
 async function selectRow(id){
   const { data, error } = await sb
     .from('guest_comments')
@@ -160,6 +171,7 @@ async function selectRow(id){
 
   btnUpdate.disabled = false;
   btnDelete.disabled = false;
+  btnSave.disabled   = true;   // ⬅️ nonaktifkan Save saat klik list (edit mode)
 }
 
 async function onSave(){
