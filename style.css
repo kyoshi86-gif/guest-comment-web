@@ -127,8 +127,8 @@ textarea{
   display:flex; 
   gap:14px; 
   flex-wrap:wrap; 
-  justify-content:right-side;
-  margin-top:100px;
+  justify-content:flex;
+  margin-top:50px;
 }
 
 .gold{
