@@ -137,68 +137,63 @@ function clearForm(){
 
 let chartInstance = null;
 
-async function onReport() {
-  try {
-    const { data, error } = await supabase.from('guest_comments').select('*');
-    if (error) throw error;
+async function onReport(){
+  // ambil data media_source dari Supabase
+  const { data, error } = await sb
+    .from('guest_comments')
+    .select('media_source');
 
-    // Hitung jumlah berdasarkan media
-    const counts = {};
-    data.forEach(row => {
-      const sumber = row.media || "Tidak diketahui";
-      counts[sumber] = (counts[sumber] || 0) + 1;
-    });
+  if(error){ alert("Gagal ambil data report: "+error.message); return; }
 
-    const labels = Object.keys(counts);
-    const values = Object.values(counts);
+  // Hitung frekuensi tiap media_source
+  const counts = {};
+  data.forEach(r=>{
+    let key = r.media_source || "Tidak diketahui";
+    counts[key] = (counts[key] || 0) + 1;
+  });
 
-    const ctx = document.getElementById('reportChart').getContext('2d');
-    if (chartInstance) chartInstance.destroy();
+  const labels = Object.keys(counts);
+  const values = Object.values(counts);
 
-    chartInstance = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: values,
-          backgroundColor: [
-            '#FF6384','#36A2EB','#FFCE56','#4BC0C0',
-            '#9966FF','#FF9F40','#8BC34A','#00BCD4'
-          ],
-          borderColor: "#fff",
-          borderWidth: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'right',
-            labels: { color:'#fff' }
-          },
-          tooltip: { enabled: false },
-          datalabels: {
-            color: '#000',
-            font: { weight: 'bold' },
-            formatter: (value, ctx) => {
-              const total = ctx.chart.data.datasets[0].data
-                .reduce((a, b) => a + b, 0);
-              const percent = ((value / total) * 100).toFixed(1) + "%";
-              return `${value} (${percent})`;  // tampilkan angka + persen
-            },
-            anchor: 'end',
-            align: 'end',
-            offset: 10,
-            clamp: true
+  // tampilkan modal
+  document.getElementById("reportModal").style.display = "flex";
+
+  // render chart
+  const ctx = document.getElementById("reportChart").getContext("2d");
+  if(chartInstance){ chartInstance.destroy(); } // reset chart lama
+
+  chartInstance = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: [
+          '#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF',
+          '#FF9F40','#8BC34A','#00BCD4'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color:'#333' }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context){
+              let total = context.dataset.data.reduce((a,b)=>a+b,0);
+              let value = context.raw;
+              let percent = ((value/total)*100).toFixed(1)+"%";
+              return `${context.label}: ${value} (${percent})`;
+            }
           }
         }
-      },
-      plugins: [ChartDataLabels]
-    });
-
-  } catch (err) {
-    console.error("Report error:", err.message);
-  }
+      }
+    }
+  });
 }
 
 // Tutup modal
