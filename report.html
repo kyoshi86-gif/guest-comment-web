@@ -1,66 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Laporan Guest Comment</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Report Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
 </head>
-<body>
-  <div class="container">
+<body class="bg-gray-900 text-white min-h-screen p-6">
 
-    <!-- Header -->
-    <div class="gc-header">
-      <div class="gc-logo">REPORT</div>
+  <h1 class="text-3xl font-bold mb-6">📊 Report Dashboard</h1>
+
+  <!-- Filter -->
+  <div class="bg-gray-800 p-4 rounded-lg mb-6 flex flex-wrap gap-4 items-center">
+    <div>
+      <label for="tahunSelect" class="block text-sm">Tahun</label>
+      <select id="tahunSelect" class="text-black rounded px-2 py-1"></select>
     </div>
-
-    <!-- Filter -->
-    <div class="form-section" style="grid-column:1/4;">
-      <div class="gc-buttons">
-        <label for="cboTahun">Tahun:</label>
-        <select id="cboTahun"></select>
-        <label for="cboBulan">Bulan:</label>
-        <select id="cboBulan">
-          <option value="1">Januari</option>
-          <option value="2">Februari</option>
-          <option value="3">Maret</option>
-          <option value="4">April</option>
-          <option value="5">Mei</option>
-          <option value="6">Juni</option>
-          <option value="7">Juli</option>
-          <option value="8">Agustus</option>
-          <option value="9">September</option>
-          <option value="10">Oktober</option>
-          <option value="11">November</option>
-          <option value="12">Desember</option>
-        </select>
-        <label>Rentang:</label>
-        <input type="date" id="startDate"> -
-        <input type="date" id="endDate">
-        <button id="btnProses" class="gold">Proses</button>
-        <button id="btnReset" class="gold">Reset</button>
-        <button class="gold" onclick="window.location.href='index.html'">Kembali</button>
+    <div>
+      <label for="bulanSelect" class="block text-sm">Bulan</label>
+      <select id="bulanSelect" class="text-black rounded px-2 py-1">
+        <option value="1">Januari</option>
+        <option value="2">Februari</option>
+        <option value="3">Maret</option>
+        <option value="4">April</option>
+        <option value="5">Mei</option>
+        <option value="6">Juni</option>
+        <option value="7">Juli</option>
+        <option value="8">Agustus</option>
+        <option value="9">September</option>
+        <option value="10">Oktober</option>
+        <option value="11">November</option>
+        <option value="12">Desember</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm">Rentang Tanggal</label>
+      <div class="flex gap-2">
+        <input type="date" id="startDate" class="text-black rounded px-2 py-1">
+        <input type="date" id="endDate" class="text-black rounded px-2 py-1">
       </div>
     </div>
-
-    <!-- Charts -->
-    <div class="rating-section" style="grid-column:1/3;">
-      <canvas id="chartBar"></canvas>
+    <div class="flex gap-2 mt-5">
+      <button id="btnProses" class="bg-green-600 px-4 py-2 rounded hover:bg-green-700">Proses</button>
+      <button id="btnReset" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700">Reset</button>
     </div>
-    <div class="table-section">
-      <canvas id="chartAsal"></canvas>
-    </div>
-    <div class="table-section">
-      <canvas id="chartMedia"></canvas>
-    </div>
-    <div class="table-section">
-      <canvas id="chartAcara"></canvas>
-    </div>
-    <div class="table-section">
-      <canvas id="chartUsia"></canvas>
-    </div>
-
   </div>
-  <script src="report.js"></script>
+
+  <!-- Charts Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-gray-800 p-4 rounded-lg">
+      <canvas id="chartAsal" height="250"></canvas>
+    </div>
+    <div class="bg-gray-800 p-4 rounded-lg">
+      <canvas id="chartMedia" height="250"></canvas>
+    </div>
+    <div class="bg-gray-800 p-4 rounded-lg">
+      <canvas id="chartAcara" height="250"></canvas>
+    </div>
+    <div class="bg-gray-800 p-4 rounded-lg">
+      <canvas id="chartUsia" height="250"></canvas>
+    </div>
+  </div>
+
+  <!-- Bar Chart -->
+  <div class="bg-gray-800 p-4 rounded-lg mt-6">
+    <canvas id="chartRating" height="120"></canvas>
+  </div>
+
+  <!-- Script -->
+  <script type="module" src="report.js"></script>
 </body>
 </html>
