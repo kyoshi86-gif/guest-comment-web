@@ -194,7 +194,7 @@ async function onReport(){
       }
     }
   });
-}
+}	
 
 // Tutup modal
 function closeReport(){
