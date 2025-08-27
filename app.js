@@ -135,162 +135,70 @@ function clearForm(){
   btnSave.disabled   = false;   // ⬅️ aktifkan lagi Save setelah reset
 }
 
-async function selectRow(id){
-  const { data, error } = await sb
-    .from('guest_comments')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if(error){ alert("Gagal mengambil data: "+error.message); return; }
-
-  // isi form
-  rowId.value = data.id;
-  document.getElementById('tgl').value = data.tgl ?? "";
-  document.getElementById('jam').value = (data.jam ?? "").toString().substring(0,5);
-  document.getElementById('no_meja').value = data.no_meja ?? "";
-  document.getElementById('nama_tamu').value = data.nama_tamu ?? "";
-
-  setRadio('asal', data.asal);
-  setRadio('media_source', data.media_source);
-  setRadio('event_type',  data.event_type);
-  setRadio('age_range',   data.age_range);
-
-  if(data.media_source === 'Lainnya'){ mediaOtherInput.disabled=false; mediaOtherInput.value = data.media_other ?? ""; }
-  if(data.event_type  === 'Lainnya'){ eventOtherInput.disabled=false; eventOtherInput.value = data.event_other ?? ""; }
-
-  setRadio('food_quality',      data.food_quality);
-  setRadio('beverage_quality',  data.beverage_quality);
-  setRadio('serving_speed',     data.serving_speed);
-  setRadio('service_rating',    data.service_rating);
-  setRadio('cleanliness',       data.cleanliness);
-  setRadio('ambience',          data.ambience);
-  setRadio('price_rating',      data.price_rating);
-
-  document.getElementById('comments').value = data.comments ?? "";
-
-  btnUpdate.disabled = false;
-  btnDelete.disabled = false;
-  btnSave.disabled   = true;   // ⬅️ nonaktifkan Save saat klik list (edit mode)
-}
-
-async function onSave(){
-  const payload = formToPayload();
-  if(!validateMinimal(payload)) return;
-
-  const { error } = await sb.from('guest_comments').insert([payload]);
-  if(error){ alert("Gagal simpan: "+error.message); return; }
-  alert("Data tersimpan.");
-  clearForm();
-  loadList();
-}
-
-async function onUpdate(){
-  const id = rowId.value;
-  if(!id){ alert("Pilih data pada tabel (kanan) untuk di-update."); return; }
-  const payload = formToPayload();
-  if(!validateMinimal(payload)) return;
-
-  const { error } = await sb.from('guest_comments').update(payload).eq('id', id);
-  if(error){ alert("Gagal update: "+error.message); return; }
-  alert("Data berhasil diupdate.");
-  clearForm();
-  loadList();
-}
-
-async function onDelete(){
-  const id = rowId.value;
-  if(!id){ alert("Pilih data pada tabel (kanan) untuk dihapus."); return; }
-  if(!confirm("Yakin hapus data ini?")) return;
-
-  const { error } = await sb.from('guest_comments').delete().eq('id', id);
-  if(error){ alert("Gagal hapus: "+error.message); return; }
-  alert("Data dihapus.");
-  clearForm();
-  loadList();
-}
-
-// Tombol lain
-function onCancel(){ clearForm(); }
-function onClose(){ window.close(); /* mungkin tidak bekerja jika bukan pop-up */ }
-function onReport(){ window.open('about:blank','_blank'); /* placeholder */ }
-
-// ====== INIT ======
-document.addEventListener('DOMContentLoaded', ()=>{
-  setupOtherToggle();
-  loadList();
-
-  btnSave.addEventListener('click', onSave);
-  btnUpdate.addEventListener('click', onUpdate);
-  btnDelete.addEventListener('click', onDelete);
-  btnCancel.addEventListener('click', onCancel);
-  btnClose.addEventListener('click', onClose);
-  btnReport.addEventListener('click', onReport);
-});
-
-let chartInstance = null;
-
 async function onReport() {
-  const { data, error } = await supabase.from('guest_comments').select('*');
-  if (error) {
-    console.error(error);
-    return;
-  }
+  try {
+    const { data, error } = await supabase.from('guest_comments').select('*');
+    if (error) throw error;
 
-  // Hitung jumlah berdasarkan sumber (contoh: media_sosial)
-  const counts = {};
-  data.forEach(row => {
-    const sumber = row.media || "Tidak diketahui";
-    counts[sumber] = (counts[sumber] || 0) + 1;
-  });
+    // Hitung jumlah berdasarkan media
+    const counts = {};
+    data.forEach(row => {
+      const sumber = row.media || "Tidak diketahui";
+      counts[sumber] = (counts[sumber] || 0) + 1;
+    });
 
-  const labels = Object.keys(counts);
-  const values = Object.values(counts);
+    const labels = Object.keys(counts);
+    const values = Object.values(counts);
 
-  const ctx = document.getElementById('reportChart').getContext('2d');
-  if (chartInstance) chartInstance.destroy();
+    const ctx = document.getElementById('reportChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
 
-  chartInstance = new Chart(ctx, {
-    type: 'pie',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: values,
-        backgroundColor: [
-          '#FF6384','#36A2EB','#FFCE56','#4BC0C0',
-          '#9966FF','#FF9F40','#8BC34A','#00BCD4'
-        ],
-        borderColor: "#fff",
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'right',
-          labels: { color:'#fff' }
-        },
-        tooltip: { enabled: false }, // matikan tooltip default
-        datalabels: {
-          color: '#000',
-          font: { weight: 'bold' },
-          formatter: (value, ctx) => {
-            const total = ctx.chart.data.datasets[0].data
-              .reduce((a, b) => a + b, 0);
-            const percent = ((value / total) * 100).toFixed(1) + "%";
-            return percent;
+    chartInstance = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: [
+            '#FF6384','#36A2EB','#FFCE56','#4BC0C0',
+            '#9966FF','#FF9F40','#8BC34A','#00BCD4'
+          ],
+          borderColor: "#fff",
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: { color:'#fff' }
           },
-          anchor: 'end',
-          align: 'end',
-          offset: 10,
-          clamp: true
+          tooltip: { enabled: false },
+          datalabels: {
+            color: '#000',
+            font: { weight: 'bold' },
+            formatter: (value, ctx) => {
+              const total = ctx.chart.data.datasets[0].data
+                .reduce((a, b) => a + b, 0);
+              const percent = ((value / total) * 100).toFixed(1) + "%";
+              return `${value} (${percent})`;  // tampilkan angka + persen
+            },
+            anchor: 'end',
+            align: 'end',
+            offset: 10,
+            clamp: true
+          }
         }
-      }
-    },
-    plugins: [ChartDataLabels]
-  });
+      },
+      plugins: [ChartDataLabels]
+    });
+
+  } catch (err) {
+    console.error("Report error:", err.message);
+  }
 }
+
 
 
 // Tutup modal
