@@ -1,62 +1,219 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Form Input Data</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Guest Card</title>
+  <!-- Jika file ada di root folder yang sama, gunakan "style.css".
+       Jika kamu menaruh file di folder /public (Vercel), gunakan "/style.css". -->
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <!-- Sama seperti catatan CSS di atas -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script defer src="app.js"></script>
 </head>
 <body>
-  <div class="container">
+  <div class="gc-wrap">
 
-    <!-- Header -->
+    <!-- Header Gold -->
     <div class="gc-header">
-      <div class="gc-logo">GUEST COMMENT</div>
+      <div class="gc-logo">ROASTER &amp; BEAR</div>
     </div>
 
-    <!-- Form Input -->
-    <div class="form-section gc-left">
-      <div class="gc-wrap">
-        <div class="gc-field">
-          <label for="txtTanggal">Tanggal</label>
-          <input type="date" id="txtTanggal">
+    <!-- Grid 3 kolom: kiri (identitas), tengah (rating & komentar), kanan (tabel data) -->
+    <form id="gcForm" class="gc-grid">
+      <!-- ====== KIRI ====== -->
+      <section class="gc-left">
+        <!-- Baris tanggal, jam, meja -->
+        <div class="gc-row3">
+          <div class="gc-field">
+            <label for="tgl">Tanggal</label>
+            <input type="date" id="tgl" required />
+          </div>
+          <div class="gc-field">
+            <label for="jam">Jam</label>
+            <input type="time" id="jam" required />
+          </div>
+          <div class="gc-field">
+            <label for="no_meja">No Meja</label>
+            <input type="text" id="no_meja" placeholder="A1 / 12 / dsb" required />
+          </div>
         </div>
+
+        <!-- Nama -->
         <div class="gc-field">
-          <label for="txtNama">Nama</label>
-          <input type="text" id="txtNama">
+          <label for="nama_tamu">Nama</label>
+          <input type="text" id="nama_tamu" required />
         </div>
-        <!-- Tambah field lain sesuai kebutuhan -->
+
+        <!-- 1. Asal -->
+        <fieldset class="gc-fieldset">
+          <legend>1. Asal</legend>
+          <label><input type="radio" name="asal" value="Yogyakarta" checked /> Yogyakarta</label>
+          <label><input type="radio" name="asal" value="Luar Kota" /> Luar Kota</label>
+          <label><input type="radio" name="asal" value="Luar Negeri" /> Luar Negeri</label>
+        </fieldset>
+
+        <!-- 2. Media Sosial -->
+        <fieldset class="gc-fieldset">
+          <legend>2. Media Sosial</legend>
+          <div class="gc-two-col">
+            <label><input type="radio" name="media_source" value="Instagram" checked /> Instagram</label>
+            <label><input type="radio" name="media_source" value="Rekomendasi Teman" /> Rekomendasi Teman</label>
+            <label><input type="radio" name="media_source" value="Tiktok" /> Tiktok</label>
+			<label><input type="radio" name="media_source" value="Lainnya" id="mediaLainnyaRadio" /> Lainnya</label>
+            <label><input type="radio" name="media_source" value="Google" /> Google</label>
+          </div>
+          <input class="gc-other" type="text" id="media_other" placeholder="Isi jika memilih Lainnya" disabled />
+        </fieldset>
+
+        <!-- 3. Acara di Roaster and Bear -->
+        <fieldset class="gc-fieldset">
+          <legend>3. Acara di Roaster and Bear</legend>
+          <div class="gc-two-col">
+            <label><input type="radio" name="event_type" value="Lunch" checked /> Lunch</label>
+            <label><input type="radio" name="event_type" value="Meeting" /> Meeting</label>
+            <label><input type="radio" name="event_type" value="Dinner" /> Dinner</label>
+            <label><input type="radio" name="event_type" value="Celebration" /> Celebration</label>
+            <label><input type="radio" name="event_type" value="Gathering" /> Gathering</label>
+            <label><input type="radio" name="event_type" value="Lainnya" id="eventLainnyaRadio" /> Lainnya</label>
+          </div>
+          <input class="gc-other" type="text" id="event_other" placeholder="Isi jika memilih Lainnya" disabled />
+        </fieldset>
+
+        <!-- 4. Rentang Usia -->
+        <fieldset class="gc-fieldset">
+          <legend>4. Rentang Usia</legend>
+          <div class="gc-two-col">
+            <label><input type="radio" name="age_range" value="18-24" /> 18 - 24</label>
+            <label><input type="radio" name="age_range" value="36-45" /> 36 - 45</label>
+            <label><input type="radio" name="age_range" value="25-35" /> 25 - 35</label>
+            <label><input type="radio" name="age_range" value="46-60" /> 46 - 60</label>
+            <label><input type="radio" name="age_range" value=">60" /> &gt; 60</label>
+          </div>
+        </fieldset>
+
+        <input type="hidden" id="row_id" />
+      </section>
+
+      <!-- ====== TENGAH (RATING + KOMENTAR + TOMBOL) ====== -->
+      <section class="gc-mid">
+        <table class="gc-rating">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Very Bad</th>
+              <th>Poor</th>
+              <th>Fair</th>
+              <th>Good</th>
+              <th>Excellent</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Food Quality</td>
+              <td><input type="radio" name="food_quality" value="1"></td>
+              <td><input type="radio" name="food_quality" value="2"></td>
+              <td><input type="radio" name="food_quality" value="3"></td>
+              <td><input type="radio" name="food_quality" value="4"></td>
+              <td><input type="radio" name="food_quality" value="5"></td>
+            </tr>
+            <tr>
+              <td>Beverage Quality</td>
+              <td><input type="radio" name="beverage_quality" value="1"></td>
+              <td><input type="radio" name="beverage_quality" value="2"></td>
+              <td><input type="radio" name="beverage_quality" value="3"></td>
+              <td><input type="radio" name="beverage_quality" value="4"></td>
+              <td><input type="radio" name="beverage_quality" value="5"></td>
+            </tr>
+            <tr>
+              <td>Serving Speed</td>
+              <td><input type="radio" name="serving_speed" value="1"></td>
+              <td><input type="radio" name="serving_speed" value="2"></td>
+              <td><input type="radio" name="serving_speed" value="3"></td>
+              <td><input type="radio" name="serving_speed" value="4"></td>
+              <td><input type="radio" name="serving_speed" value="5"></td>
+            </tr>
+            <tr>
+              <td>Service</td>
+              <td><input type="radio" name="service_rating" value="1"></td>
+              <td><input type="radio" name="service_rating" value="2"></td>
+              <td><input type="radio" name="service_rating" value="3"></td>
+              <td><input type="radio" name="service_rating" value="4"></td>
+              <td><input type="radio" name="service_rating" value="5"></td>
+            </tr>
+            <tr>
+              <td>Cleanliness</td>
+              <td><input type="radio" name="cleanliness" value="1"></td>
+              <td><input type="radio" name="cleanliness" value="2"></td>
+              <td><input type="radio" name="cleanliness" value="3"></td>
+              <td><input type="radio" name="cleanliness" value="4"></td>
+              <td><input type="radio" name="cleanliness" value="5"></td>
+            </tr>
+            <tr>
+              <td>Ambience</td>
+              <td><input type="radio" name="ambience" value="1"></td>
+              <td><input type="radio" name="ambience" value="2"></td>
+              <td><input type="radio" name="ambience" value="3"></td>
+              <td><input type="radio" name="ambience" value="4"></td>
+              <td><input type="radio" name="ambience" value="5"></td>
+            </tr>
+            <tr>
+              <td>Price</td>
+              <td><input type="radio" name="price_rating" value="1"></td>
+              <td><input type="radio" name="price_rating" value="2"></td>
+              <td><input type="radio" name="price_rating" value="3"></td>
+              <td><input type="radio" name="price_rating" value="4"></td>
+              <td><input type="radio" name="price_rating" value="5"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="gc-field">
+          <label for="comments">Others comment or suggestions ?</label>
+          <textarea id="comments" rows="14"></textarea>
+        </div>
+
         <div class="gc-buttons">
-          <button id="btnSave" class="gold">Save</button>
-          <button id="btnUpdate" class="gold" disabled>Update</button>
-          <button id="btnDelete" class="gold" disabled>Delete</button>
-          <a href="report.html" id="btnReport" class="gold">Report</a>
+          <button type="button" id="btnSave"   class="gold">Save</button>
+          <button type="button" id="btnUpdate" class="gold" disabled>Update</button>
+          <button type="button" id="btnDelete" class="gold" disabled>Delete</button>
+          <button type="button" id="btnCancel" class="gold">Cancel</button>
+          <button type="button" id="btnClose"  class="gold">Close</button>
+		  <button type="button" id="btnReport" class="gold">Report</button>
         </div>
-      </div>
-    </div>
+		
+      </section>
 
-    <!-- Rating -->
-    <div class="rating-section gc-mid">
-      <h3>Rating</h3>
-      <!-- tabel rating -->
-    </div>
-
-    <!-- List Data -->
-    <div class="table-section gc-right">
-      <table class="gc-list" id="tblData">
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Nama</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div class="gc-buttons" style="margin-top:10px; justify-content:flex-start;">
-        <button id="btnClose" class="gold">Close</button>
-      </div>
-    </div>
-
+      <!-- ====== KANAN (TABEL DATA) ====== -->
+      <aside class="gc-right">
+        <table class="gc-list">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Tanggal</th>
+              <th>Jam</th>
+              <th>Meja</th>
+              <th>Nama</th>
+            </tr>
+          </thead>
+          <tbody id="listBody"></tbody>
+        </table>
+      </aside>
+		
+    </form>
+	
+	<!-- Modal Report -->
+<div id="reportModal" class="report-modal" style="display:none;">
+  <div class="report-content">
+    <h2>Laporan Media Sosial</h2>
+    <canvas id="reportChart" width="400" height="400"></canvas>
+    <button class="gold" onclick="closeReport()">Tutup</button>
   </div>
-  <script src="app.js"></script>
+</div>
+
+	
+    <div class="gc-footer">Versi 1.2</div>
+  </div>
 </body>
 </html>
