@@ -9,6 +9,7 @@
   <script src="https://unpkg.com/@supabase/supabase-js"></script>
   <!-- Sama seperti catatan CSS di atas -->
   <script defer src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="gc-wrap">
@@ -200,6 +201,16 @@
       </aside>
 		
     </form>
+	
+	<!-- Modal Report -->
+<div id="reportModal" class="report-modal" style="display:none;">
+  <div class="report-content">
+    <h2>Laporan Media Sosial</h2>
+    <canvas id="reportChart" width="400" height="400"></canvas>
+    <button class="gold" onclick="closeReport()">Tutup</button>
+  </div>
+</div>
+
 	
     <div class="gc-footer">Versi 1.2</div>
   </div>
