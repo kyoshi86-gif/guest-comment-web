@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Report Guest Comment</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+</head>
+<body>
+  <h2>Report Guest Comment</h2>
+
+  <!-- Filter -->
+  <label for="cmbTahun">Tahun:</label>
+  <select id="cmbTahun"></select>
+
+  <label for="cmbBulan">Bulan:</label>
+  <select id="cmbBulan"></select>
+
+  <label for="txtTglAwal">Tanggal Awal:</label>
+  <input type="date" id="txtTglAwal">
+
+  <label for="txtTglAkhir">Tanggal Akhir:</label>
+  <input type="date" id="txtTglAkhir">
+
+  <button id="btnProses">Proses</button>
+  <button id="btnReset">Reset</button>
+
+  <hr>
+
+  <!-- 4 Pie Charts -->
+  <div style="display:flex;flex-wrap:wrap;gap:20px;">
+    <canvas id="chartAsal" width="300" height="300"></canvas>
+    <canvas id="chartMedia" width="300" height="300"></canvas>
+    <canvas id="chartAcara" width="300" height="300"></canvas>
+    <canvas id="chartUsia" width="300" height="300"></canvas>
+  </div>
+
+  <!-- 1 Bar Chart -->
+  <div style="margin-top:30px;">
+    <canvas id="chartKualitas" width="800" height="400"></canvas>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -411,3 +411,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   setDefaultYearMonth();
   loadReport();
 });
+
+// === Event Tombol ===
+document.getElementById("btnProses").addEventListener("click", loadReport);
+document.getElementById("btnReset").addEventListener("click", resetFilter);
+
