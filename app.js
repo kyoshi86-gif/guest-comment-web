@@ -135,6 +135,8 @@ function clearForm(){
   btnSave.disabled   = false;   // ⬅️ aktifkan lagi Save setelah reset
 }
 
+let chartInstance = null;
+
 async function onReport() {
   try {
     const { data, error } = await supabase.from('guest_comments').select('*');
@@ -198,8 +200,6 @@ async function onReport() {
     console.error("Report error:", err.message);
   }
 }
-
-
 
 // Tutup modal
 function closeReport(){
