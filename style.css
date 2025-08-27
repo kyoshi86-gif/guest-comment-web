@@ -123,15 +123,6 @@ textarea{
   margin-top:6px;
 }
 
-.gc-report{
-  display:flex; 
-  gap:14px; 
-  flex-wrap:wrap; 
-  justify-content:flex;
-  margin-top:10px;
-  margin-left: 900px;
-}
-
 .gold{
   background:var(--gold);
   border:none;
