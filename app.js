@@ -226,3 +226,95 @@ function showInput() {
   document.getElementById("pageReport").classList.add("hidden");
   document.getElementById("pageInput").classList.remove("hidden");
 }
+
+let chartObjects = {}; // simpan chart biar bisa di-destroy saat refresh
+
+function loadReport() {
+  // contoh dataset dummy (nanti bisa diisi dari Supabase)
+  const dataAsal = { labels: ["Jogja", "Solo", "Magelang"], values: [120, 80, 40] };
+  const dataMedia = { labels: ["Instagram", "Facebook", "Tiktok"], values: [90, 60, 30] };
+  const dataUlasan = { labels: ["Puas", "Biasa", "Kurang"], values: [150, 50, 20] };
+  const dataAcara = { labels: ["Seminar", "Workshop", "Expo"], values: [40, 30, 20] };
+  const dataUsia = { labels: ["<20", "20-30", "31-40", "41+"], values: [20, 60, 50, 30] };
+
+  // definisi semua chart
+  renderPie("chartAsal", dataAsal, ["#2ecc71", "#27ae60", "#1e8449"]);
+  renderPie("chartMedia", dataMedia, ["#3498db", "#2980b9", "#1f618d"]);
+  renderPie("chartUlasan", dataUlasan, ["#f39c12", "#e67e22", "#d35400"]);
+  renderBar("chartAcara", dataAcara, ["#9b59b6", "#8e44ad", "#6c3483"]);
+  renderBar("chartUsia", dataUsia, ["#34495e", "#7f8c8d", "#95a5a6", "#bdc3c7"]);
+}
+
+// fungsi render Pie chart
+function renderPie(canvasId, dataset, colors) {
+  const ctx = document.getElementById(canvasId).getContext("2d");
+
+  // destroy chart lama
+  if (chartObjects[canvasId]) chartObjects[canvasId].destroy();
+
+  chartObjects[canvasId] = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: dataset.labels,
+      datasets: [{
+        data: dataset.values,
+        backgroundColor: colors
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "bottom" },
+        datalabels: {
+          formatter: (value, context) => {
+            let sum = context.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+            let percentage = ((value/sum)*100).toFixed(1)+"%";
+            return value + " (" + percentage + ")";
+          },
+          color: "#fff",
+          font: { weight: "bold" }
+        }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+}
+
+// fungsi render Bar chart
+function renderBar(canvasId, dataset, colors) {
+  const ctx = document.getElementById(canvasId).getContext("2d");
+
+  if (chartObjects[canvasId]) chartObjects[canvasId].destroy();
+
+  chartObjects[canvasId] = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: dataset.labels,
+      datasets: [{
+        data: dataset.values,
+        backgroundColor: colors
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          anchor: "end",
+          align: "top",
+          formatter: (value, context) => {
+            let sum = context.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+            let percentage = ((value/sum)*100).toFixed(1)+"%";
+            return value + " (" + percentage + ")";
+          },
+          color: "#000",
+          font: { weight: "bold" }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+}
