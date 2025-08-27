@@ -256,45 +256,38 @@ async function onReport(){
   if(chartInstance){ chartInstance.destroy(); } // reset chart lama
 
   chartInstance = new Chart(ctx, {
-  type: 'pie',
-  data: {
-    labels: labels,
-    datasets: [{
-      data: values,
-      backgroundColor: [
-        '#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF',
-        '#FF9F40','#8BC34A','#00BCD4'
-      ],
-      borderColor: "#fff",
-      borderWidth: 2
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'right',
-        labels: { color:'#333' }
-      },
-      tooltip: { enabled: false }, // tooltip dimatikan, pakai label langsung
-      datalabels: {
-        color: '#000',
-        font: { weight: 'bold' },
-        formatter: (value, ctx) => {
-          let total = ctx.chart._metasets[0].total;
-          let percent = ((value / total) * 100).toFixed(1) + "%";
-          return percent;
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: [
+          '#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF',
+          '#FF9F40','#8BC34A','#00BCD4'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color:'#333' }
         },
-        anchor: 'end',
-        align: 'end',
-        offset: 10,   // jarak dari pie
-        clamp: true
+        tooltip: {
+          callbacks: {
+            label: function(context){
+              let total = context.dataset.data.reduce((a,b)=>a+b,0);
+              let value = context.raw;
+              let percent = ((value/total)*100).toFixed(1)+"%";
+              return `${context.label}: ${value} (${percent})`;
+            }
+          }
+        }
       }
     }
-  },
-  plugins: [ChartDataLabels]
-});
-
+  });
+}
 
 // Tutup modal
 function closeReport(){
