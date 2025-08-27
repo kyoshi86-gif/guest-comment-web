@@ -216,68 +216,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   btnReport.addEventListener('click', onReport);
 });
 
-let chartInstance = null;
-
-async function onReport(){
-  // ambil data media_source dari Supabase
-  const { data, error } = await sb
-    .from('guest_comments')
-    .select('media_source');
-
-  if(error){ alert("Gagal ambil data report: "+error.message); return; }
-
-  // Hitung frekuensi tiap media_source
-  const counts = {};
-  data.forEach(r=>{
-    let key = r.media_source || "Tidak diketahui";
-    counts[key] = (counts[key] || 0) + 1;
-  });
-
-  const labels = Object.keys(counts);
-  const values = Object.values(counts);
-
-  // tampilkan modal
-  document.getElementById("reportModal").style.display = "flex";
-
-  // render chart
-  const ctx = document.getElementById("reportChart").getContext("2d");
-  if(chartInstance){ chartInstance.destroy(); } // reset chart lama
-
-  chartInstance = new Chart(ctx, {
-    type: 'pie',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: values,
-        backgroundColor: [
-          '#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF',
-          '#FF9F40','#8BC34A','#00BCD4'
-        ]
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color:'#333' }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context){
-              let total = context.dataset.data.reduce((a,b)=>a+b,0);
-              let value = context.raw;
-              let percent = ((value/total)*100).toFixed(1)+"%";
-              return `${context.label}: ${value} (${percent})`;
-            }
-          }
-        }
-      }
-    }
-  });
+function showReport() {
+  document.getElementById("pageInput").classList.add("hidden");
+  document.getElementById("pageReport").classList.remove("hidden");
+  loadReport(); // langsung load report default
 }
 
-// Tutup modal
-function closeReport(){
-  document.getElementById("reportModal").style.display = "none";
+function showInput() {
+  document.getElementById("pageReport").classList.add("hidden");
+  document.getElementById("pageInput").classList.remove("hidden");
 }

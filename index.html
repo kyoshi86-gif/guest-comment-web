@@ -215,5 +215,64 @@
 	
     <div class="gc-footer">Versi 1.2</div>
   </div>
+  <body>
+  <!-- Halaman Input Data -->
+  <div id="pageInput" class="page">
+    <!-- isi form input data lama -->
+    <button onclick="showReport()">Report</button>
+  </div>
+
+  <!-- Halaman Report -->
+  <div id="pageReport" class="page hidden">
+    <div class="report-container">
+      <!-- Panel Kiri -->
+      <div class="sidebar">
+        <label>Tahun</label>
+        <select id="cmbTahun"></select>
+        
+        <label>Bulan</label>
+        <select id="cmbBulan"></select>
+        
+        <label>Tgl Mulai</label>
+        <input type="date" id="tglMulai">
+        
+        <label>Tgl Akhir</label>
+        <input type="date" id="tglAkhir">
+
+        <button class="btn-proses" onclick="loadReport()">Proses</button>
+        <button class="btn-reset" onclick="resetReport()">Reset</button>
+        <button class="btn-gray" onclick="showInput()">Input Data</button>
+        <button class="btn-gray">Close</button>
+      </div>
+
+      <!-- Panel Kanan -->
+      <div class="charts">
+        <div class="chart-item">
+          <h3>Asal</h3>
+          <canvas id="chartAsal"></canvas>
+        </div>
+        <div class="chart-item">
+          <h3>Media Sosial</h3>
+          <canvas id="chartMedia"></canvas>
+        </div>
+        <div class="chart-item">
+          <h3>Ulasan</h3>
+          <canvas id="chartUlasan"></canvas>
+        </div>
+        <div class="chart-item">
+          <h3>Acara</h3>
+          <canvas id="chartAcara"></canvas>
+        </div>
+        <div class="chart-item">
+          <h3>Usia</h3>
+          <canvas id="chartUsia"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <script src="app.js"></script>
 </body>
 </html>
