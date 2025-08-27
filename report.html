@@ -1,45 +1,66 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Report Guest Comment</title>
+  <title>Laporan Guest Comment</title>
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 </head>
 <body>
-  <h2>Report Guest Comment</h2>
+  <div class="container">
 
-  <!-- Filter -->
-  <label for="cmbTahun">Tahun:</label>
-  <select id="cmbTahun"></select>
+    <!-- Header -->
+    <div class="gc-header">
+      <div class="gc-logo">REPORT</div>
+    </div>
 
-  <label for="cmbBulan">Bulan:</label>
-  <select id="cmbBulan"></select>
+    <!-- Filter -->
+    <div class="form-section" style="grid-column:1/4;">
+      <div class="gc-buttons">
+        <label for="cboTahun">Tahun:</label>
+        <select id="cboTahun"></select>
+        <label for="cboBulan">Bulan:</label>
+        <select id="cboBulan">
+          <option value="1">Januari</option>
+          <option value="2">Februari</option>
+          <option value="3">Maret</option>
+          <option value="4">April</option>
+          <option value="5">Mei</option>
+          <option value="6">Juni</option>
+          <option value="7">Juli</option>
+          <option value="8">Agustus</option>
+          <option value="9">September</option>
+          <option value="10">Oktober</option>
+          <option value="11">November</option>
+          <option value="12">Desember</option>
+        </select>
+        <label>Rentang:</label>
+        <input type="date" id="startDate"> -
+        <input type="date" id="endDate">
+        <button id="btnProses" class="gold">Proses</button>
+        <button id="btnReset" class="gold">Reset</button>
+        <button class="gold" onclick="window.location.href='index.html'">Kembali</button>
+      </div>
+    </div>
 
-  <label for="txtTglAwal">Tanggal Awal:</label>
-  <input type="date" id="txtTglAwal">
+    <!-- Charts -->
+    <div class="rating-section" style="grid-column:1/3;">
+      <canvas id="chartBar"></canvas>
+    </div>
+    <div class="table-section">
+      <canvas id="chartAsal"></canvas>
+    </div>
+    <div class="table-section">
+      <canvas id="chartMedia"></canvas>
+    </div>
+    <div class="table-section">
+      <canvas id="chartAcara"></canvas>
+    </div>
+    <div class="table-section">
+      <canvas id="chartUsia"></canvas>
+    </div>
 
-  <label for="txtTglAkhir">Tanggal Akhir:</label>
-  <input type="date" id="txtTglAkhir">
-
-  <button id="btnProses">Proses</button>
-  <button id="btnReset">Reset</button>
-
-  <hr>
-
-  <!-- 4 Pie Charts -->
-  <div style="display:flex;flex-wrap:wrap;gap:20px;">
-    <canvas id="chartAsal" width="300" height="300"></canvas>
-    <canvas id="chartMedia" width="300" height="300"></canvas>
-    <canvas id="chartAcara" width="300" height="300"></canvas>
-    <canvas id="chartUsia" width="300" height="300"></canvas>
   </div>
-
-  <!-- 1 Bar Chart -->
-  <div style="margin-top:30px;">
-    <canvas id="chartKualitas" width="800" height="400"></canvas>
-  </div>
-
-  <script src="app.js"></script>
+  <script src="report.js"></script>
 </body>
 </html>
