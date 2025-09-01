@@ -6,8 +6,18 @@
   <!-- Jika file ada di root folder yang sama, gunakan "style.css".
        Jika kamu menaruh file di folder /public (Vercel), gunakan "/style.css". -->
   <link rel="stylesheet" href="style.css" />
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
-  <!-- Sama seperti catatan CSS di atas -->
+  <!-- Supabase client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = "https://drdflrzsvfakdnhqniaa.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
+    window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  </script>
+
+  <!-- Chart.js untuk report -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- App logic -->
   <script defer src="app.js"></script>
 </head>
 <body>
