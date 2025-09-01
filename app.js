@@ -201,7 +201,7 @@ async function onDelete(){
 // Tombol lain
 function onCancel(){ clearForm(); }
 function onClose(){ window.close(); /* mungkin tidak bekerja jika bukan pop-up */ }
-function onReport(){ window.open('about:blank','_blank'); /* placeholder */ }
+function onReport(){ window.open('report.html'); /* placeholder */ }
 
 // ====== INIT ======
 document.addEventListener('DOMContentLoaded', ()=>{
