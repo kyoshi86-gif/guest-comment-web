@@ -9,12 +9,6 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
 
-// 🎨 Warna konsisten
-const COLORS = [
-  "#4285F4", "#EA4335", "#FBBC05", "#34A853",
-  "#A142F4", "#FF6D01", "#46BDC6", "#9AA0A6"
-];
-
 // ================= INIT ==================
 document.addEventListener("DOMContentLoaded", async () => {
   await loadTahun();
@@ -42,8 +36,7 @@ function handleDateChange() {
   if (startDate || endDate) {
     toggleFilters(true); // disable tahun & bulan
   } else {
-    toggleFilters(false); 
-    setDefaultFilters(); // aktifkan default lagi kalau tanggal kosong
+    toggleFilters(false); // aktifkan lagi kalau tanggal kosong
   }
 }
 
@@ -62,7 +55,7 @@ async function loadTahun() {
 
   if (error) {
     console.error("loadTahun error:", error);
-    alert("Gagal memuat data tahun!");
+	alert("Gagal memuat data tahun!");
     return;
   }
 
@@ -81,7 +74,6 @@ function resetFilters() {
   setDefaultFilters();
   document.getElementById("startDate").value = "";
   document.getElementById("endDate").value = "";
-  toggleFilters(false);
   loadReport();
 }
 
@@ -93,8 +85,10 @@ async function loadReport() {
   const endDate = document.getElementById("endDate").value;
 
   let data = [];
+  let error = null;
 
   if (startDate && endDate) {
+    // 🔄 Ambil langsung dari tabel asli lalu agregasi manual
     const res = await supabase
       .from("guest_comments")
       .select("*")
@@ -103,11 +97,12 @@ async function loadReport() {
 
     if (res.error) {
       console.error("loadReport error:", res.error);
-      alert("Gagal mengambil data berdasarkan tanggal!");
+	  alert("Gagal mengambil data berdasarkan tanggal!");
       return;
     }
     data = aggregateManual(res.data);
   } else {
+    // ✅ Default ambil dari view
     let query = supabase.from("v_feedback_report").select("*");
     if (tahun) query = query.eq("tahun", tahun);
     if (bulan) query = query.eq("bulan", bulan);
@@ -115,7 +110,7 @@ async function loadReport() {
     const res = await query;
     if (res.error) {
       console.error("loadReport error:", res.error);
-      alert("Gagal mengambil data laporan!");
+	  alert("Gagal mengambil data laporan!");
       return;
     }
     data = res.data;
@@ -135,14 +130,19 @@ function toggleFilters(disable) {
 function aggregateManual(rows) {
   if (!rows || rows.length === 0) return [];
 
+  // hitung rata-rata rating
   const avg = (field) =>
     rows.reduce((sum, r) => sum + (r[field] || 0), 0) / rows.length;
 
   return [
     {
+      asal: null,
       asal_count: countBy(rows, "asal"),
+      media_source: null,
       media_count: countBy(rows, "media_source"),
+      event_type: null,
       acara_count: countBy(rows, "event_type"),
+      age_range: null,
       usia_count: countBy(rows, "age_range"),
       avg_food_quality: avg("food_quality"),
       avg_beverage_quality: avg("beverage_quality"),
@@ -168,6 +168,7 @@ function countBy(rows, field) {
 function renderCharts(data) {
   if (!data || data.length === 0) return;
 
+  // kalau data hasil manual (array cuma 1 elemen, countBy berupa object)
   let asalData, mediaData, acaraData, usiaData;
   if (data.length === 1 && typeof data[0].asal_count === "object") {
     asalData = objToArray(data[0].asal_count);
@@ -188,7 +189,7 @@ function renderCharts(data) {
   pieAcara = renderPie("pieAcara", "Acara", acaraData);
   pieUsia = renderPie("pieUsia", "Usia", usiaData);
 
-  barRating = renderBar("barRating", rating);
+  renderBar("barRating", rating);
 }
 
 // ================= UTIL ==================
@@ -198,7 +199,10 @@ function groupCount(data, field, fieldCount) {
     const key = row[field] || "Lainnya";
     result[key] = (result[key] || 0) + (row[fieldCount] || 0);
   });
-  return Object.entries(result).map(([label, value]) => ({ label, value }));
+  return Object.entries(result).map(([label, value]) => ({
+    label,
+    value,
+  }));
 }
 
 function objToArray(obj) {
@@ -214,26 +218,40 @@ function renderPie(canvasId, title, dataset) {
     type: "pie",
     data: {
       labels: dataset.map((d) => d.label),
-      datasets: [{
-        data: dataset.map((d) => d.value),
-        backgroundColor: COLORS.slice(0, dataset.length),
-      }],
+      datasets: [
+        {
+          data: dataset.map((d) => d.value),
+          backgroundColor: [
+            "#4e79a7",
+            "#f28e2b",
+            "#e15759",
+            "#76b7b2",
+            "#59a14f",
+            "#edc949",
+            "#af7aa1",
+            "#ff9da7",
+          ],
+        },
+      ],
     },
     options: {
       plugins: {
-        legend: { display: false },
-        datalabels: {
-          color: "#fff",
-          font: { weight: "bold" },
-          formatter: (value, ctx) => {
-            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-            return sum ? ((value / sum) * 100).toFixed(1) + "%" : "0%";
-          }
+        title: {
+          display: true,
+          text: title,
         },
-        title: { display: true, text: title, font: { size: 16, weight: "bold" } }
-      }
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const val = context.raw;
+              const total = dataset.reduce((a, b) => a + b.value, 0);
+              const percent = total ? ((val / total) * 100).toFixed(1) : 0;
+              return `${context.label}: ${val} (${percent}%)`;
+            },
+          },
+        },
+      },
     },
-    plugins: [ChartDataLabels]
   });
 }
 
@@ -241,42 +259,41 @@ function renderBar(canvasId, rating) {
   const ctx = document.getElementById(canvasId).getContext("2d");
   if (Chart.getChart(ctx)) Chart.getChart(ctx).destroy();
 
-  return new Chart(ctx, {
+  new Chart(ctx, {
     type: "bar",
     data: {
       labels: [
-        "Food Quality","Beverage Quality","Serving Speed",
-        "Service","Cleanliness","Ambience","Price"
+        "Food Quality",
+        "Beverage Quality",
+        "Serving Speed",
+        "Service",
+        "Cleanliness",
+        "Ambience",
+        "Price",
       ],
-      datasets: [{
-        data: [
-          rating.avg_food_quality,
-          rating.avg_beverage_quality,
-          rating.avg_serving_speed,
-          rating.avg_service,
-          rating.avg_cleanliness,
-          rating.avg_ambience,
-          rating.avg_price,
-        ],
-        backgroundColor: COLORS.slice(0, 7),
-      }],
+      datasets: [
+        {
+          label: "Average Rating",
+          data: [
+            rating.avg_food_quality,
+            rating.avg_beverage_quality,
+            rating.avg_serving_speed,
+            rating.avg_service,
+            rating.avg_cleanliness,
+            rating.avg_ambience,
+            rating.avg_price,
+          ],
+          backgroundColor: "#4e79a7",
+        },
+      ],
     },
     options: {
-      plugins: {
-        legend: { display: false },
-        datalabels: {
-          anchor: "end",
-          align: "end",
-          color: "#000",
-          formatter: (value) => value ? value.toFixed(2) : "0.00"
-        },
-        title: { display: true, text: "Rata-rata Rating", font: { size: 16, weight: "bold" } }
-      },
       scales: {
-        y: { beginAtZero: true, max: 5, grid: { display: true } },
-        x: { grid: { display: false } }
-      }
+        y: {
+          beginAtZero: true,
+          max: 5,
+        },
+      },
     },
-    plugins: [ChartDataLabels]
   });
 }
