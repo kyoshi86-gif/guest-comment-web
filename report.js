@@ -1,88 +1,212 @@
-// ====== Update All Charts ======
-async function updateCharts() {
-  const tahun = parseInt(tahunSelect.value);
-  const bulan = parseInt(bulanSelect.value);
-  const { today } = getCurrentYearMonth();
+// report.js
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-  let filterStart, filterEnd;
+// ✅ Ganti sesuai kredensial Supabase kamu
+const supabaseUrl = "https://drdflrzsvfakdnhqniaa.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  if (startDate.value && endDate.value) {
-    filterStart = startDate.value;
-    filterEnd = endDate.value;
-  } else {
-    filterStart = `${tahun}-${String(bulan).padStart(2,"0")}-01`;
-    filterEnd = today;
+let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
+
+// ================= INIT ==================
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadTahun(); // isi combobox tahun dari data
+  setDefaultFilters(); // set default tahun & bulan sekarang
+  await loadReport(); // load report pertama kali
+
+  document.getElementById("btnProses").addEventListener("click", loadReport);
+  document.getElementById("btnReset").addEventListener("click", resetFilters);
+});
+
+// ================= FILTER ==================
+function setDefaultFilters() {
+  const now = new Date();
+  document.getElementById("tahun").value = now.getFullYear();
+  document.getElementById("bulan").value = now.getMonth() + 1;
+}
+
+async function loadTahun() {
+  const { data, error } = await supabase
+    .from("v_feedback_report")
+    .select("tahun")
+    .order("tahun", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return;
   }
 
-  // === Ambil data agregat rating ===
-  const { data: ratingData, error: ratingError } = await supabase.rpc("get_rating_avg", {
-    p_year: tahun,
-    p_month: bulan
+  const tahunSet = [...new Set(data.map((d) => d.tahun))];
+  const cbTahun = document.getElementById("tahun");
+  cbTahun.innerHTML = "";
+  tahunSet.forEach((t) => {
+    const opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t;
+    cbTahun.appendChild(opt);
   });
-  if (ratingError) console.error("Rating error:", ratingError);
+}
 
-  // === Ambil data usia ===
-  const { data: usiaData, error: usiaError } = await supabase
-    .from("guest_comments")
-    .select("usia")
-    .gte("tanggal", filterStart).lte("tanggal", filterEnd);
-  if (usiaError) console.error("Usia error:", usiaError);
+function resetFilters() {
+  setDefaultFilters();
+  document.getElementById("startDate").value = "";
+  document.getElementById("endDate").value = "";
+  loadReport();
+}
 
-  // === Ambil data acara ===
-  const { data: acaraData, error: acaraError } = await supabase
-    .from("guest_comments")
-    .select("acara")
-    .gte("tanggal", filterStart).lte("tanggal", filterEnd);
-  if (acaraError) console.error("Acara error:", acaraError);
+// ================= LOAD REPORT ==================
+async function loadReport() {
+  const tahun = document.getElementById("tahun").value;
+  const bulan = document.getElementById("bulan").value;
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
 
-  // === Ambil data media ===
-  const { data: mediaData, error: mediaError } = await supabase
-    .from("guest_comments")
-    .select("media")
-    .gte("tanggal", filterStart).lte("tanggal", filterEnd);
-  if (mediaError) console.error("Media error:", mediaError);
+  let query = supabase.from("v_feedback_report").select("*");
 
-  // === Ambil data asal ===
-  const { data: asalData, error: asalError } = await supabase
-    .from("guest_comments")
-    .select("asal")
-    .gte("tanggal", filterStart).lte("tanggal", filterEnd);
-  if (asalError) console.error("Asal error:", asalError);
+  if (tahun) query = query.eq("tahun", tahun);
+  if (bulan) query = query.eq("bulan", bulan);
 
-  // ====== Hapus chart lama ======
-  [chartAsal, chartMedia, chartAcara, chartUsia, chartRating].forEach(ch => ch && ch.destroy());
-
-  // ====== Render Chart Rating ======
-  if (ratingData && ratingData.length > 0) {
-    const r = ratingData[0];
-    const fields = ["food_quality","beverage_quality","serving_speed","service","cleanliness","ambience","price"];
-    const values = fields.map(f => r[f]);
-    chartRating = renderBarChart(
-      document.getElementById("chartRating"),
-      "Rating Rata-rata",
-      fields.map(f => f.replace("_"," ")),
-      values
-    );
+  // Jika ada filter rentang tanggal, override
+  if (startDate && endDate) {
+    query = supabase
+      .from("feedback") // fallback ke tabel asli jika filter tanggal
+      .select("*")
+      .gte("tanggal", startDate)
+      .lte("tanggal", endDate);
   }
 
-  // ====== Helper count ======
-  const countBy = (arr, field) => {
-    const counts = {};
-    arr.forEach(row => {
-      const key = row[field] || "Lainnya";
-      counts[key] = (counts[key] || 0) + 1;
-    });
-    return { labels: Object.keys(counts), values: Object.values(counts) };
-  };
+  const { data, error } = await query;
+  if (error) {
+    console.error(error);
+    return;
+  }
 
-  // ====== Render Pie Charts ======
-  const usia = countBy(usiaData, "usia");
-  const acara = countBy(acaraData, "acara");
-  const media = countBy(mediaData, "media");
-  const asal = countBy(asalData, "asal");
+  console.log("Report Data:", data);
+  renderCharts(data);
+}
 
-  chartUsia = renderPieChart(document.getElementById("chartUsia"), "Usia", usia.labels, usia.values);
-  chartAcara = renderPieChart(document.getElementById("chartAcara"), "Acara", acara.labels, acara.values);
-  chartMedia = renderPieChart(document.getElementById("chartMedia"), "Media Sosial", media.labels, media.values);
-  chartAsal = renderPieChart(document.getElementById("chartAsal"), "Asal", asal.labels, asal.values);
+// ================= RENDER CHARTS ==================
+function renderCharts(data) {
+  // Grouping data untuk pie chart
+  const asalData = groupCount(data, "asal", "asal_count");
+  const mediaData = groupCount(data, "media", "media_count");
+  const acaraData = groupCount(data, "acara", "acara_count");
+  const usiaData = groupCount(data, "usia", "usia_count");
+
+  // Ambil rata-rata untuk bar chart (ambil 1 karena sudah agregasi)
+  const rating = data.length > 0 ? data[0] : {};
+
+  // Pie: Asal
+  pieAsal = renderPie("pieAsal", "Asal", asalData);
+  // Pie: Media Sosial
+  pieMedia = renderPie("pieMedia", "Media Sosial", mediaData);
+  // Pie: Acara
+  pieAcara = renderPie("pieAcara", "Acara", acaraData);
+  // Pie: Usia
+  pieUsia = renderPie("pieUsia", "Usia", usiaData);
+
+  // Bar Chart
+  renderBar("barRating", rating);
+}
+
+// ================= UTIL FUNGSIONAL ==================
+function groupCount(data, field, fieldCount) {
+  const result = {};
+  data.forEach((row) => {
+    const key = row[field] || "Lainnya";
+    result[key] = (result[key] || 0) + (row[fieldCount] || 0);
+  });
+  return Object.entries(result).map(([label, value]) => ({
+    label,
+    value,
+  }));
+}
+
+// ================= CHART.JS ==================
+function renderPie(canvasId, title, dataset) {
+  const ctx = document.getElementById(canvasId).getContext("2d");
+  if (Chart.getChart(ctx)) Chart.getChart(ctx).destroy();
+
+  return new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: dataset.map((d) => d.label),
+      datasets: [
+        {
+          data: dataset.map((d) => d.value),
+          backgroundColor: [
+            "#4e79a7",
+            "#f28e2b",
+            "#e15759",
+            "#76b7b2",
+            "#59a14f",
+            "#edc949",
+            "#af7aa1",
+            "#ff9da7",
+          ],
+        },
+      ],
+    },
+    options: {
+      plugins: {
+        title: {
+          display: true,
+          text: title,
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const val = context.raw;
+              const total = dataset.reduce((a, b) => a + b.value, 0);
+              const percent = ((val / total) * 100).toFixed(1);
+              return `${context.label}: ${val} (${percent}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+function renderBar(canvasId, rating) {
+  const ctx = document.getElementById(canvasId).getContext("2d");
+  if (Chart.getChart(ctx)) Chart.getChart(ctx).destroy();
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: [
+        "Food Quality",
+        "Beverage Quality",
+        "Serving Speed",
+        "Service",
+        "Cleanliness",
+        "Ambience",
+        "Price",
+      ],
+      datasets: [
+        {
+          label: "Average Rating",
+          data: [
+            rating.avg_food_quality,
+            rating.avg_beverage_quality,
+            rating.avg_serving_speed,
+            rating.avg_service,
+            rating.avg_cleanliness,
+            rating.avg_ambience,
+            rating.avg_price,
+          ],
+          backgroundColor: "#4e79a7",
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 5,
+        },
+      },
+    },
+  });
 }
