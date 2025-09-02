@@ -81,7 +81,7 @@ async function loadReport() {
   query = supabase
     .from("v_feedback_report")
     .select("*")
-
+}
   const { data, error } = await query;
 
   if (error) {
