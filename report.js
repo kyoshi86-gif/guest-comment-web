@@ -14,6 +14,7 @@ const COLORS = [
 ];
 
 // ----------------- PLUGIN: OUTLABELS (custom, Chart.js v4 safe) -----------------
+// ----------------- PLUGIN: OUTLABELS (custom, Chart.js v4 safe) -----------------
 const outlabelsPlugin = {
   id: 'outlabelsPlugin',
   afterDraw(chart) {
@@ -26,32 +27,27 @@ const outlabelsPlugin = {
 
     meta.data.forEach((arc, i) => {
       const value = dataset.data[i] || 0;
-      if (value === 0) return; // skip zero slices
+      if (value === 0) return;
 
-      // arc properties (Chart.js v4)
       const start = arc.startAngle;
       const end = arc.endAngle;
       const mid = (start + end) / 2;
 
-      // center and outer radius
       const cx = arc.x;
       const cy = arc.y;
       const outer = arc.outerRadius || Math.min(chart.width, chart.height) / 2;
 
-      // line start a bit inside outer radius
       const lineStartX = cx + Math.cos(mid) * (outer * 0.9);
       const lineStartY = cy + Math.sin(mid) * (outer * 0.9);
 
-      // line end outside pie
       const lineEndX = cx + Math.cos(mid) * (outer + 18);
       const lineEndY = cy + Math.sin(mid) * (outer + 18);
 
-      // small horizontal extension so label isn't on the line
       const isRight = Math.cos(mid) >= 0;
       const textX = lineEndX + (isRight ? 8 : -8);
       const textY = lineEndY + 4;
 
-      // draw leader line
+      // leader line
       ctx.save();
       ctx.strokeStyle = "#333";
       ctx.lineWidth = 1;
@@ -60,24 +56,30 @@ const outlabelsPlugin = {
       ctx.lineTo(lineEndX, lineEndY);
       ctx.stroke();
 
-      // draw small dot at end
       ctx.fillStyle = "#333";
       ctx.beginPath();
       ctx.arc(lineEndX, lineEndY, 2.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // draw label text (Name value (percent%))
+      // label text di 2 baris
       const label = chart.data.labels[i] ?? "Lainnya";
       const percent = total ? ((value / total) * 100).toFixed(1) : "0.0";
-      const text = `${label} — ${value} (${percent}%)`;
+
       ctx.font = "12px Arial";
       ctx.fillStyle = "#111";
       ctx.textAlign = isRight ? "left" : "right";
-      ctx.fillText(text, textX, textY);
+
+      // baris pertama: Label — value
+      ctx.fillText(`${label} — ${value}`, textX, textY);
+
+      // baris kedua: (percent%)
+      ctx.fillText(`(${percent}%)`, textX, textY + 14);
+
       ctx.restore();
     });
   }
 };
+
 
 // ----------------- PLUGIN: BAR LABELS -----------------
 const barLabelPlugin = {
