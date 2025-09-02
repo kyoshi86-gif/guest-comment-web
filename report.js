@@ -50,42 +50,6 @@ function resetFilters() {
   loadReport();
 }
 
-// ================= FILTER ==================
-function setDefaultFilters() {
-  const now = new Date();
-  document.getElementById("tahun").value = now.getFullYear();
-  document.getElementById("bulan").value = now.getMonth() + 1;
-}
-
-async function loadTahun() {
-  const { data, error } = await supabase
-    .from("v_feedback_report")
-    .select("tahun")
-    .order("tahun", { ascending: false });
-
-  if (error) {
-    console.error("loadTahun error:", error);
-    return;
-  }
-
-  const tahunSet = [...new Set(data.map((d) => d.tahun))];
-  const cbTahun = document.getElementById("tahun");
-  cbTahun.innerHTML = "";
-  tahunSet.forEach((t) => {
-    const opt = document.createElement("option");
-    opt.value = t;
-    opt.textContent = t;
-    cbTahun.appendChild(opt);
-  });
-}
-
-function resetFilters() {
-  setDefaultFilters();
-  document.getElementById("startDate").value = "";
-  document.getElementById("endDate").value = "";
-  loadReport();
-}
-
 // ================= LOAD REPORT ==================
 async function loadReport() {
   const tahun = document.getElementById("tahun").value;
@@ -94,10 +58,10 @@ async function loadReport() {
   const endDate = document.getElementById("endDate").value;
 
   let data = [];
-  let error = null;
 
   if (startDate && endDate) {
-    // 🔄 Ambil langsung dari tabel asli lalu agregasi manual
+    toggleFilters(true);
+
     const res = await supabase
       .from("guest_comments")
       .select("*")
@@ -106,14 +70,12 @@ async function loadReport() {
 
     if (res.error) {
       console.error("loadReport error:", res.error);
-	  alert("Gagal mengambil data berdasarkan tanggal!");
       return;
     }
     data = aggregateManual(res.data);
   } else {
-	  toggleFilters(false);  // pastikan aktif lagi
-	  
-    // ✅ Default ambil dari view
+    toggleFilters(false);  // pastikan aktif lagi
+
     let query = supabase.from("v_feedback_report").select("*");
     if (tahun) query = query.eq("tahun", tahun);
     if (bulan) query = query.eq("bulan", bulan);
@@ -121,7 +83,6 @@ async function loadReport() {
     const res = await query;
     if (res.error) {
       console.error("loadReport error:", res.error);
-	  alert("Gagal mengambil data laporan!");
       return;
     }
     data = res.data;
@@ -130,6 +91,7 @@ async function loadReport() {
   console.log("Report Data:", data);
   renderCharts(data);
 }
+
 
 // ================= TOGGLE FILTERS ==================
 function toggleFilters(disable) {
