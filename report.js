@@ -190,40 +190,23 @@ function renderPie(canvasId, title, dataset) {
       ],
     },
     options: {
-      layout: {
-        padding: 20,
-      },
       plugins: {
-        legend: {
-          display: false, // ✅ legend dimatikan
-        },
-        title: {
-          display: true,
-          text: title,
-        },
-        outlabels: {
-          text: "%l (%p%)", // label + persentase
+        legend: { display: false },
+        title: { display: true, text: title },
+        datalabels: {
           color: "black",
-          stretch: 15, // panjang garis
-          font: {
-            resizable: true,
-            minSize: 12,
-            maxSize: 16,
+          formatter: (value, context) => {
+            const total = dataset.reduce((a, b) => a + b.value, 0);
+            const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+            return `${context.chart.data.labels[context.dataIndex]} (${percent}%)`;
           },
-        },
-        tooltip: {
-          callbacks: {
-            label: (context) => {
-              const val = context.raw;
-              const total = dataset.reduce((a, b) => a + b.value, 0);
-              const percent = total ? ((val / total) * 100).toFixed(1) : 0;
-              return `${context.label}: ${val} (${percent}%)`;
-            },
-          },
+          anchor: "end",
+          align: "end",
+          offset: 10, // keluar sedikit dari chart
         },
       },
     },
-    plugins: [ChartPieChartOutlabels], // ✅ plugin garis label luar
+    plugins: [ChartDataLabels],
   });
 }
 
