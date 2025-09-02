@@ -27,17 +27,27 @@ function handleDateChange() {
   const startDate = document.getElementById("startDate").value;
   const endDate = document.getElementById("endDate").value;
 
-  if (startDate && endDate && startDate > endDate) {
-    alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir!");
-    document.getElementById("endDate").value = "";
-    return;
-  }
-
-  if (startDate || endDate) {
-    toggleFilters(true); // disable tahun & bulan
+  if (startDate && endDate) {
+    toggleFilters(true);   // disable tahun & bulan kalau rentang tanggal terisi
   } else {
-    toggleFilters(false); // aktifkan lagi kalau tanggal kosong
+    toggleFilters(false);  // aktifkan lagi kalau kosong
   }
+}
+
+// ================= RESET FILTER ==================
+function resetFilters() {
+  // kosongkan tanggal
+  document.getElementById("startDate").value = "";
+  document.getElementById("endDate").value = "";
+
+  // aktifkan kembali tahun & bulan
+  toggleFilters(false);
+
+  // set default tahun & bulan sekarang
+  setDefaultFilters();
+
+  // reload report
+  loadReport();
 }
 
 // ================= FILTER ==================
@@ -101,6 +111,8 @@ async function loadReport() {
     }
     data = aggregateManual(res.data);
   } else {
+	  toggleFilters(false);  // pastikan aktif lagi
+	  
     // ✅ Default ambil dari view
     let query = supabase.from("v_feedback_report").select("*");
     if (tahun) query = query.eq("tahun", tahun);
