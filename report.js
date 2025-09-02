@@ -73,8 +73,8 @@ async function loadReport() {
     query = supabase
       .from("v_feedback_report")
       .select("*")
-      .gte("tanggal", startDate)
-      .lte("tanggal", endDate);
+      .gte("tgl", startDate)
+      .lte("tgl", endDate);
   }
 
   const { data, error } = await query;
