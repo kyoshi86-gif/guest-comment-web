@@ -1,6 +1,7 @@
 // report.js
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
+// ✅ Ganti sesuai kredensial Supabase kamu
 const supabaseUrl = "https://drdflrzsvfakdnhqniaa.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
@@ -10,9 +11,9 @@ let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
 
 // ================= INIT ==================
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadTahun();
-  setDefaultFilters();
-  await loadReport();
+  await loadTahun(); // isi combobox tahun dari data
+  setDefaultFilters(); // set default tahun & bulan sekarang
+  await loadReport(); // load report pertama kali
 
   document.getElementById("btnProses").addEventListener("click", loadReport);
   document.getElementById("btnReset").addEventListener("click", resetFilters);
@@ -61,66 +62,97 @@ async function loadReport() {
   const startDate = document.getElementById("startDate").value;
   const endDate = document.getElementById("endDate").value;
 
-  let query;
+  let data = [];
+  let error = null;
 
   if (startDate && endDate) {
-    // 🔄 ambil langsung dari tabel asli guest_comments
-    query = supabase
+    // 🔄 Ambil langsung dari tabel asli lalu agregasi manual
+    const res = await supabase
       .from("guest_comments")
       .select("*")
       .gte("tgl", startDate)
       .lte("tgl", endDate);
-  } else {
-    // default ambil dari view
-    query = supabase
-      .from("v_feedback_report")
-      .select("*");
 
+    if (res.error) {
+      console.error("loadReport error:", res.error);
+      return;
+    }
+    data = aggregateManual(res.data);
+  } else {
+    // ✅ Default ambil dari view
+    let query = supabase.from("v_feedback_report").select("*");
     if (tahun) query = query.eq("tahun", tahun);
     if (bulan) query = query.eq("bulan", bulan);
-  }
 
-  const { data, error } = await query;
-
-  if (error) {
-    console.error("loadReport error:", error);
-    return;
+    const res = await query;
+    if (res.error) {
+      console.error("loadReport error:", res.error);
+      return;
+    }
+    data = res.data;
   }
 
   console.log("Report Data:", data);
-  renderCharts(data, !!(startDate && endDate));
+  renderCharts(data);
+}
+
+// ================= AGGREGASI MANUAL ==================
+function aggregateManual(rows) {
+  if (!rows || rows.length === 0) return [];
+
+  // hitung rata-rata rating
+  const avg = (field) =>
+    rows.reduce((sum, r) => sum + (r[field] || 0), 0) / rows.length;
+
+  return [
+    {
+      asal: null,
+      asal_count: countBy(rows, "asal"),
+      media_source: null,
+      media_count: countBy(rows, "media_source"),
+      event_type: null,
+      acara_count: countBy(rows, "event_type"),
+      age_range: null,
+      usia_count: countBy(rows, "age_range"),
+      avg_food_quality: avg("food_quality"),
+      avg_beverage_quality: avg("beverage_quality"),
+      avg_serving_speed: avg("serving_speed"),
+      avg_service: avg("service_rating"),
+      avg_cleanliness: avg("cleanliness"),
+      avg_ambience: avg("ambience"),
+      avg_price: avg("price_rating"),
+    },
+  ];
+}
+
+function countBy(rows, field) {
+  const map = {};
+  rows.forEach((r) => {
+    const key = r[field] || "Lainnya";
+    map[key] = (map[key] || 0) + 1;
+  });
+  return map;
 }
 
 // ================= RENDER CHARTS ==================
-function renderCharts(data, isRaw = false) {
-  let asalData, mediaData, acaraData, usiaData, rating;
+function renderCharts(data) {
+  if (!data || data.length === 0) return;
 
-  if (isRaw) {
-    // Kalau pakai data mentah dari guest_comments
-    asalData = groupCount(data, "asal");
-    mediaData = groupCount(data, "media_source");
-    acaraData = groupCount(data, "event_type");
-    usiaData = groupCount(data, "age_range");
-
-    // hitung rata-rata rating manual
-    rating = {
-      avg_food_quality: avg(data, "food_quality"),
-      avg_beverage_quality: avg(data, "beverage_quality"),
-      avg_serving_speed: avg(data, "serving_speed"),
-      avg_service: avg(data, "service_rating"),
-      avg_cleanliness: avg(data, "cleanliness"),
-      avg_ambience: avg(data, "ambience"),
-      avg_price: avg(data, "price_rating"),
-    };
+  // kalau data hasil manual (array cuma 1 elemen, countBy berupa object)
+  let asalData, mediaData, acaraData, usiaData;
+  if (data.length === 1 && typeof data[0].asal_count === "object") {
+    asalData = objToArray(data[0].asal_count);
+    mediaData = objToArray(data[0].media_count);
+    acaraData = objToArray(data[0].acara_count);
+    usiaData = objToArray(data[0].usia_count);
   } else {
-    // Kalau pakai view teragregasi
     asalData = groupCount(data, "asal", "asal_count");
     mediaData = groupCount(data, "media_source", "media_count");
     acaraData = groupCount(data, "event_type", "acara_count");
     usiaData = groupCount(data, "age_range", "usia_count");
-
-    rating = data.length > 0 ? data[0] : {};
   }
+
+  const rating = data[0] || {};
 
   pieAsal = renderPie("pieAsal", "Asal", asalData);
   pieMedia = renderPie("pieMedia", "Media Sosial", mediaData);
@@ -131,12 +163,11 @@ function renderCharts(data, isRaw = false) {
 }
 
 // ================= UTIL ==================
-function groupCount(data, field, fieldCount = null) {
+function groupCount(data, field, fieldCount) {
   const result = {};
   data.forEach((row) => {
     const key = row[field] || "Lainnya";
-    const value = fieldCount ? (row[fieldCount] || 0) : 1;
-    result[key] = (result[key] || 0) + value;
+    result[key] = (result[key] || 0) + (row[fieldCount] || 0);
   });
   return Object.entries(result).map(([label, value]) => ({
     label,
@@ -144,9 +175,8 @@ function groupCount(data, field, fieldCount = null) {
   }));
 }
 
-function avg(data, field) {
-  if (!data.length) return 0;
-  return data.reduce((sum, row) => sum + (row[field] || 0), 0) / data.length;
+function objToArray(obj) {
+  return Object.entries(obj).map(([label, value]) => ({ label, value }));
 }
 
 // ================= CHART.JS ==================
