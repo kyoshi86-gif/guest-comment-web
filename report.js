@@ -316,7 +316,7 @@ function renderPie(canvasId, title, dataset) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      layout: { padding: 20 },
+      layout: { padding: 30 },
       plugins: {
         legend: { display: false }, // hilangkan legend
         title: { display: false, text: title, padding: {top: 8, bottom: 8} },
@@ -367,7 +367,7 @@ function renderBar(canvasId, rating) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-	  layout: { padding: 20 },
+	  layout: { padding: 30 },
       plugins: {
         legend: { display: false },
         title: { display: false, text: 'Rating Rata-rata', padding: {top:8, bottom:8} },
