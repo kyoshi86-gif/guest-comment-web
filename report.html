@@ -120,6 +120,19 @@
   </div>
 
   <!-- Report Script -->
+  <script type="module">
+    import { Chart, registerables } from "https://cdn.jsdelivr.net/npm/chart.js/dist/chart.esm.js";
+    Chart.register(...registerables);
+
+    // Default options (hilangkan title, tambah padding untuk datalabels)
+    Chart.defaults.plugins.title.display = false;
+    Chart.defaults.layout = {
+      padding: {
+        top: 30,
+        bottom: 20
+      }
+    };
+  </script>
   <script type="module" src="report.js"></script>
 </body>
 </html>
