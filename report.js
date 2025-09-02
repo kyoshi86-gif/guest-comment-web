@@ -69,7 +69,7 @@ async function loadReport() {
   // Jika ada filter rentang tanggal, override
   if (startDate && endDate) {
     query = supabase
-      .from("feedback") // fallback ke tabel asli jika filter tanggal
+      .from("v_feedback_report") // fallback ke tabel asli jika filter tanggal
       .select("*")
       .gte("tanggal", startDate)
       .lte("tanggal", endDate);
