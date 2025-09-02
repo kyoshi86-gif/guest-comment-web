@@ -17,7 +17,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("btnProses").addEventListener("click", loadReport);
   document.getElementById("btnReset").addEventListener("click", resetFilters);
+
+  // ✅ Auto-disable tahun & bulan kalau user pilih rentang tanggal
+  document.getElementById("startDate").addEventListener("change", handleDateChange);
+  document.getElementById("endDate").addEventListener("change", handleDateChange);
 });
+
+// ================= HANDLE DATE CHANGE ==================
+function handleDateChange() {
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+
+  if (startDate || endDate) {
+    toggleFilters(true);   // disable tahun & bulan
+  } else {
+    toggleFilters(false);  // kalau tanggal dikosongkan lagi → aktifkan lagi
+  }
+}
+
 
 // ================= FILTER ==================
 function setDefaultFilters() {
@@ -151,28 +168,3 @@ function countBy(rows, field) {
 // ================= RENDER CHARTS ==================
 // ... (bagian renderCharts, groupCount, objToArray, renderPie, renderBar tetap sama)
 
-// ================= INIT ==================
-document.addEventListener("DOMContentLoaded", async () => {
-  await loadTahun(); // isi combobox tahun dari data
-  setDefaultFilters(); // set default tahun & bulan sekarang
-  await loadReport(); // load report pertama kali
-
-  document.getElementById("btnProses").addEventListener("click", loadReport);
-  document.getElementById("btnReset").addEventListener("click", resetFilters);
-
-  // ✅ Auto-disable tahun & bulan kalau user pilih rentang tanggal
-  document.getElementById("startDate").addEventListener("change", handleDateChange);
-  document.getElementById("endDate").addEventListener("change", handleDateChange);
-});
-
-// ================= HANDLE DATE CHANGE ==================
-function handleDateChange() {
-  const startDate = document.getElementById("startDate").value;
-  const endDate = document.getElementById("endDate").value;
-
-  if (startDate || endDate) {
-    toggleFilters(true);   // disable tahun & bulan
-  } else {
-    toggleFilters(false);  // kalau tanggal dikosongkan lagi → aktifkan lagi
-  }
-}
