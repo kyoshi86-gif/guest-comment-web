@@ -158,6 +158,7 @@ async function selectRow(id){
 
   document.getElementById('comments').value = data.comments ?? "";
 
+  btnSave.disabled   = true;
   btnUpdate.disabled = false;
   btnDelete.disabled = false;
 }
