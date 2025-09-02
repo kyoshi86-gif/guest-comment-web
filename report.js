@@ -119,6 +119,12 @@ async function loadReport() {
   renderCharts(data);
 }
 
+// ================= TOGGLE FILTERS ==================
+function toggleFilters(disable) {
+  document.getElementById("tahun").disabled = disable;
+  document.getElementById("bulan").disabled = disable;
+}
+
 // ================= AGGREGASI MANUAL ==================
 function aggregateManual(rows) {
   if (!rows || rows.length === 0) return [];
