@@ -70,12 +70,17 @@ async function loadReport() {
 
   // Jika ada filter rentang tanggal, override total
   if (startDate && endDate) {
-    query = supabase
-      .from("v_feedback_report")
-      .select("*")
-      .gte("tgl", startDate)
-      .lte("tgl", endDate);
-  }
+  // 🔄 ambil langsung dari tabel asli
+  query = supabase
+    .from("feedback")
+    .select("*")
+    .gte("tanggal", startDate)
+    .lte("tanggal", endDate);
+} else {
+  // default ambil dari view
+  query = supabase
+    .from("v_feedback_report")
+    .select("*")
 
   const { data, error } = await query;
 
