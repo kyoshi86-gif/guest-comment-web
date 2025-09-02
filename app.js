@@ -62,6 +62,7 @@ function clearForm(){
   rowId.value = "";
   mediaOtherInput.disabled = true;
   eventOtherInput.disabled = true;
+  btnSave.disabled   = false;
   btnUpdate.disabled = true;
   btnDelete.disabled = true;
 }
