@@ -105,7 +105,7 @@ const barLabelPlugin = {
 };
 
 // ----------------- UTILS & SUPABASE + CHART LOGIC (tetap seperti strukturmu) -----------------
-let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
+// let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
 
 document.addEventListener("DOMContentLoaded", async () => {
   await loadTahun();
