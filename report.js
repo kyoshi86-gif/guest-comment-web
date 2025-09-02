@@ -1,7 +1,6 @@
 // report.js
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-// ✅ Ganti sesuai kredensial Supabase kamu
 const supabaseUrl = "https://drdflrzsvfakdnhqniaa.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
@@ -11,9 +10,9 @@ let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
 
 // ================= INIT ==================
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadTahun(); // isi combobox tahun dari data
-  setDefaultFilters(); // set default tahun & bulan sekarang
-  await loadReport(); // load report pertama kali
+  await loadTahun();
+  setDefaultFilters();
+  await loadReport();
 
   document.getElementById("btnProses").addEventListener("click", loadReport);
   document.getElementById("btnReset").addEventListener("click", resetFilters);
@@ -62,26 +61,25 @@ async function loadReport() {
   const startDate = document.getElementById("startDate").value;
   const endDate = document.getElementById("endDate").value;
 
-  let query = supabase.from("v_feedback_report").select("*");
+  let query;
 
-  // Filter default tahun & bulan
-  if (tahun) query = query.eq("tahun", tahun);
-  if (bulan) query = query.eq("bulan", bulan);
-
-  // Jika ada filter rentang tanggal, override total
   if (startDate && endDate) {
-  // 🔄 ambil langsung dari tabel asli
-  query = supabase
-    .from("feedback")
-    .select("*")
-    .gte("tanggal", startDate)
-    .lte("tanggal", endDate);
-} else {
-  // default ambil dari view
-  query = supabase
-    .from("v_feedback_report")
-    .select("*")
-}
+    // 🔄 ambil langsung dari tabel asli guest_comments
+    query = supabase
+      .from("guest_comments")
+      .select("*")
+      .gte("tgl", startDate)
+      .lte("tgl", endDate);
+  } else {
+    // default ambil dari view
+    query = supabase
+      .from("v_feedback_report")
+      .select("*");
+
+    if (tahun) query = query.eq("tahun", tahun);
+    if (bulan) query = query.eq("bulan", bulan);
+  }
+
   const { data, error } = await query;
 
   if (error) {
@@ -90,17 +88,39 @@ async function loadReport() {
   }
 
   console.log("Report Data:", data);
-  renderCharts(data);
+  renderCharts(data, !!(startDate && endDate));
 }
 
 // ================= RENDER CHARTS ==================
-function renderCharts(data) {
-  const asalData = groupCount(data, "asal", "asal_count");
-  const mediaData = groupCount(data, "media", "media_count");
-  const acaraData = groupCount(data, "acara", "acara_count");
-  const usiaData = groupCount(data, "usia", "usia_count");
+function renderCharts(data, isRaw = false) {
+  let asalData, mediaData, acaraData, usiaData, rating;
 
-  const rating = data.length > 0 ? data[0] : {};
+  if (isRaw) {
+    // Kalau pakai data mentah dari guest_comments
+    asalData = groupCount(data, "asal");
+    mediaData = groupCount(data, "media_source");
+    acaraData = groupCount(data, "event_type");
+    usiaData = groupCount(data, "age_range");
+
+    // hitung rata-rata rating manual
+    rating = {
+      avg_food_quality: avg(data, "food_quality"),
+      avg_beverage_quality: avg(data, "beverage_quality"),
+      avg_serving_speed: avg(data, "serving_speed"),
+      avg_service: avg(data, "service_rating"),
+      avg_cleanliness: avg(data, "cleanliness"),
+      avg_ambience: avg(data, "ambience"),
+      avg_price: avg(data, "price_rating"),
+    };
+  } else {
+    // Kalau pakai view teragregasi
+    asalData = groupCount(data, "asal", "asal_count");
+    mediaData = groupCount(data, "media_source", "media_count");
+    acaraData = groupCount(data, "event_type", "acara_count");
+    usiaData = groupCount(data, "age_range", "usia_count");
+
+    rating = data.length > 0 ? data[0] : {};
+  }
 
   pieAsal = renderPie("pieAsal", "Asal", asalData);
   pieMedia = renderPie("pieMedia", "Media Sosial", mediaData);
@@ -111,16 +131,22 @@ function renderCharts(data) {
 }
 
 // ================= UTIL ==================
-function groupCount(data, field, fieldCount) {
+function groupCount(data, field, fieldCount = null) {
   const result = {};
   data.forEach((row) => {
     const key = row[field] || "Lainnya";
-    result[key] = (result[key] || 0) + (row[fieldCount] || 0);
+    const value = fieldCount ? (row[fieldCount] || 0) : 1;
+    result[key] = (result[key] || 0) + value;
   });
   return Object.entries(result).map(([label, value]) => ({
     label,
     value,
   }));
+}
+
+function avg(data, field) {
+  if (!data.length) return 0;
+  return data.reduce((sum, row) => sum + (row[field] || 0), 0) / data.length;
 }
 
 // ================= CHART.JS ==================
