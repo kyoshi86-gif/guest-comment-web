@@ -165,32 +165,68 @@ function countBy(rows, field) {
 }
 
 // ================= RENDER CHARTS ==================
-function renderCharts(data) {
-  if (!data || data.length === 0) return;
+function renderPie(canvasId, title, dataset) {
+  const ctx = document.getElementById(canvasId).getContext("2d");
+  if (Chart.getChart(ctx)) Chart.getChart(ctx).destroy();
 
-  // kalau data hasil manual (array cuma 1 elemen, countBy berupa object)
-  let asalData, mediaData, acaraData, usiaData;
-  if (data.length === 1 && typeof data[0].asal_count === "object") {
-    asalData = objToArray(data[0].asal_count);
-    mediaData = objToArray(data[0].media_count);
-    acaraData = objToArray(data[0].acara_count);
-    usiaData = objToArray(data[0].usia_count);
-  } else {
-    asalData = groupCount(data, "asal", "asal_count");
-    mediaData = groupCount(data, "media_source", "media_count");
-    acaraData = groupCount(data, "event_type", "acara_count");
-    usiaData = groupCount(data, "age_range", "usia_count");
-  }
-
-  const rating = data[0] || {};
-
-  pieAsal = renderPie("pieAsal", "Asal", asalData);
-  pieMedia = renderPie("pieMedia", "Media Sosial", mediaData);
-  pieAcara = renderPie("pieAcara", "Acara", acaraData);
-  pieUsia = renderPie("pieUsia", "Usia", usiaData);
-
-  renderBar("barRating", rating);
+  return new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: dataset.map((d) => d.label),
+      datasets: [
+        {
+          data: dataset.map((d) => d.value),
+          backgroundColor: [
+            "#4e79a7",
+            "#f28e2b",
+            "#e15759",
+            "#76b7b2",
+            "#59a14f",
+            "#edc949",
+            "#af7aa1",
+            "#ff9da7",
+          ],
+        },
+      ],
+    },
+    options: {
+      layout: {
+        padding: 20,
+      },
+      plugins: {
+        legend: {
+          display: false, // ✅ legend dimatikan
+        },
+        title: {
+          display: true,
+          text: title,
+        },
+        outlabels: {
+          text: "%l (%p%)", // label + persentase
+          color: "black",
+          stretch: 15, // panjang garis
+          font: {
+            resizable: true,
+            minSize: 12,
+            maxSize: 16,
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const val = context.raw;
+              const total = dataset.reduce((a, b) => a + b.value, 0);
+              const percent = total ? ((val / total) * 100).toFixed(1) : 0;
+              return `${context.label}: ${val} (${percent}%)`;
+            },
+          },
+        },
+      },
+    },
+    plugins: [ChartPieChartOutlabels], // ✅ plugin garis label luar
+  });
 }
+
 
 // ================= UTIL ==================
 function groupCount(data, field, fieldCount) {
