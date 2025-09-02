@@ -3,7 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
 // ✅ Ganti sesuai kredensial Supabase kamu
 const supabaseUrl = "https://drdflrzsvfakdnhqniaa.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
@@ -32,7 +33,7 @@ async function loadTahun() {
     .order("tahun", { ascending: false });
 
   if (error) {
-    console.error(error);
+    console.error("loadTahun error:", error);
     return;
   }
 
@@ -63,21 +64,23 @@ async function loadReport() {
 
   let query = supabase.from("v_feedback_report").select("*");
 
+  // Filter default tahun & bulan
   if (tahun) query = query.eq("tahun", tahun);
   if (bulan) query = query.eq("bulan", bulan);
 
-  // Jika ada filter rentang tanggal, override
+  // Jika ada filter rentang tanggal, override total
   if (startDate && endDate) {
     query = supabase
-      .from("v_feedback_report") // fallback ke tabel asli jika filter tanggal
+      .from("v_feedback_report")
       .select("*")
       .gte("tanggal", startDate)
       .lte("tanggal", endDate);
   }
 
   const { data, error } = await query;
+
   if (error) {
-    console.error(error);
+    console.error("loadReport error:", error);
     return;
   }
 
@@ -87,29 +90,22 @@ async function loadReport() {
 
 // ================= RENDER CHARTS ==================
 function renderCharts(data) {
-  // Grouping data untuk pie chart
   const asalData = groupCount(data, "asal", "asal_count");
   const mediaData = groupCount(data, "media", "media_count");
   const acaraData = groupCount(data, "acara", "acara_count");
   const usiaData = groupCount(data, "usia", "usia_count");
 
-  // Ambil rata-rata untuk bar chart (ambil 1 karena sudah agregasi)
   const rating = data.length > 0 ? data[0] : {};
 
-  // Pie: Asal
   pieAsal = renderPie("pieAsal", "Asal", asalData);
-  // Pie: Media Sosial
   pieMedia = renderPie("pieMedia", "Media Sosial", mediaData);
-  // Pie: Acara
   pieAcara = renderPie("pieAcara", "Acara", acaraData);
-  // Pie: Usia
   pieUsia = renderPie("pieUsia", "Usia", usiaData);
 
-  // Bar Chart
   renderBar("barRating", rating);
 }
 
-// ================= UTIL FUNGSIONAL ==================
+// ================= UTIL ==================
 function groupCount(data, field, fieldCount) {
   const result = {};
   data.forEach((row) => {
@@ -158,7 +154,7 @@ function renderPie(canvasId, title, dataset) {
             label: (context) => {
               const val = context.raw;
               const total = dataset.reduce((a, b) => a + b.value, 0);
-              const percent = ((val / total) * 100).toFixed(1);
+              const percent = total ? ((val / total) * 100).toFixed(1) : 0;
               return `${context.label}: ${val} (${percent}%)`;
             },
           },
