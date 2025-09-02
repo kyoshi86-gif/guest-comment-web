@@ -1,7 +1,6 @@
 // report.js
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-// ✅ Ganti sesuai kredensial Supabase kamu
 const supabaseUrl = "https://drdflrzsvfakdnhqniaa.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
@@ -11,14 +10,13 @@ let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
 
 // ================= INIT ==================
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadTahun(); // isi combobox tahun dari data
-  setDefaultFilters(); // set default tahun & bulan sekarang
-  await loadReport(); // load report pertama kali
+  await loadTahun();
+  setDefaultFilters();
+  await loadReport();
 
   document.getElementById("btnProses").addEventListener("click", loadReport);
   document.getElementById("btnReset").addEventListener("click", resetFilters);
 
-  // ✅ Auto-disable tahun & bulan kalau user pilih rentang tanggal
   document.getElementById("startDate").addEventListener("change", handleDateChange);
   document.getElementById("endDate").addEventListener("change", handleDateChange);
 });
@@ -28,13 +26,18 @@ function handleDateChange() {
   const startDate = document.getElementById("startDate").value;
   const endDate = document.getElementById("endDate").value;
 
+  if (startDate && endDate && startDate > endDate) {
+    alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir!");
+    document.getElementById("endDate").value = "";
+    return;
+  }
+
   if (startDate || endDate) {
-    toggleFilters(true);   // disable tahun & bulan
+    toggleFilters(true); // disable tahun & bulan
   } else {
-    toggleFilters(false);  // kalau tanggal dikosongkan lagi → aktifkan lagi
+    toggleFilters(false); // aktifkan lagi kalau tanggal kosong
   }
 }
-
 
 // ================= FILTER ==================
 function setDefaultFilters() {
@@ -51,6 +54,7 @@ async function loadTahun() {
 
   if (error) {
     console.error("loadTahun error:", error);
+    alert("Gagal memuat data tahun!");
     return;
   }
 
@@ -70,9 +74,7 @@ function resetFilters() {
   document.getElementById("startDate").value = "";
   document.getElementById("endDate").value = "";
 
-  // aktifkan kembali tahun & bulan
   toggleFilters(false);
-
   loadReport();
 }
 
@@ -84,26 +86,23 @@ async function loadReport() {
   const endDate = document.getElementById("endDate").value;
 
   let data = [];
-  let error = null;
 
   if (startDate && endDate) {
-    // ❌ kalau pakai tanggal, disable tahun & bulan
     toggleFilters(true);
 
-    // 🔄 Ambil langsung dari tabel asli lalu agregasi manual
     const res = await supabase
       .from("guest_comments")
       .select("*")
-      .gte("tgl", startDate)
+      .gte("tgl", startDate) // ⬅️ ganti ke "tanggal" kalau memang kolomnya itu
       .lte("tgl", endDate);
 
     if (res.error) {
       console.error("loadReport error:", res.error);
+      alert("Gagal mengambil data berdasarkan tanggal!");
       return;
     }
     data = aggregateManual(res.data);
   } else {
-    // ✅ Default ambil dari view
     toggleFilters(false);
 
     let query = supabase.from("v_feedback_report").select("*");
@@ -113,6 +112,7 @@ async function loadReport() {
     const res = await query;
     if (res.error) {
       console.error("loadReport error:", res.error);
+      alert("Gagal mengambil data laporan!");
       return;
     }
     data = res.data;
@@ -166,5 +166,4 @@ function countBy(rows, field) {
 }
 
 // ================= RENDER CHARTS ==================
-// ... (bagian renderCharts, groupCount, objToArray, renderPie, renderBar tetap sama)
-
+// ... (renderCharts, groupCount, objToArray, renderPie, renderBar tetap sama)
