@@ -367,7 +367,7 @@ function renderBar(canvasId, rating) {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        title: { display: true, text: 'Rating Rata-rata', padding: {top:8, bottom:8} },
+        title: { display: false, text: 'Rating Rata-rata', padding: {top:8, bottom:8} },
         tooltip: { enabled: true }
       },
       scales: {
