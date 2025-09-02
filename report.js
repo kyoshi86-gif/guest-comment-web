@@ -317,7 +317,7 @@ function renderPie(canvasId, title, dataset) {
       layout: { padding: 10 },
       plugins: {
         legend: { display: false }, // hilangkan legend
-        title: { display: true, text: title, padding: {top: 8, bottom: 8} },
+        title: { display: false, text: title, padding: {top: 8, bottom: 8} },
         tooltip: {
           callbacks: {
             label: (ctx) => {
