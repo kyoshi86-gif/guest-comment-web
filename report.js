@@ -462,3 +462,105 @@ async function showYTDChart(tahun) {
     container.appendChild(btnBack);
   }
 }
+
+// ==== Ubah onClick di renderBar ====
+onClick: async (evt, elements) => {
+  if (elements.length > 0) {
+    const tahun = document.getElementById("tahun").value;
+    await showYTDChartsPerKategori(tahun);
+  }
+}
+
+// Fungsi tampilkan YTD per kategori (line chart terpisah)
+async function showYTDChartsPerKategori(tahun) {
+  const { data, error } = await supabase
+    .from("v_feedback_report")
+    .select("*")
+    .eq("tahun", tahun)
+    .order("bulan", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    alert("Gagal ambil data YTD");
+    return;
+  }
+
+  const bulanLabels = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+
+  const categories = [
+    { key: "avg_food_quality", label: "Food Quality", color: COLORS[0] },
+    { key: "avg_beverage_quality", label: "Beverage Quality", color: COLORS[1] },
+    { key: "avg_serving_speed", label: "Serving Speed", color: COLORS[2] },
+    { key: "avg_service", label: "Service", color: COLORS[3] },
+    { key: "avg_cleanliness", label: "Cleanliness", color: COLORS[4] },
+    { key: "avg_ambience", label: "Ambience", color: COLORS[5] },
+    { key: "avg_price", label: "Price", color: COLORS[6] },
+  ];
+
+  // kosongkan isi container
+  const container = document.querySelector("#chartContainer");
+  container.innerHTML = "";
+
+  // generate chart per kategori
+  categories.forEach(cat => {
+    const col = document.createElement("div");
+    col.className = "col-md-6"; // 2 kolom per row
+
+    col.innerHTML = `
+      <div class="card">
+        <div class="card-header">${cat.label} (YTD ${tahun})</div>
+        <div class="card-body chart-container">
+          <canvas id="line-${cat.key}"></canvas>
+        </div>
+      </div>
+    `;
+    container.appendChild(col);
+
+    const ctx = col.querySelector("canvas").getContext("2d");
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: bulanLabels,
+        datasets: [{
+          label: cat.label,
+          data: data.map(r => r[cat.key] || 0),
+          borderColor: cat.color,
+          backgroundColor: cat.color,
+          tension: 0.3,
+          fill: false,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: cat.color
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true },
+          datalabels: {
+            align: 'top',
+            anchor: 'end',
+            formatter: v => v.toFixed(2)
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }
+        }
+      }
+    });
+  });
+
+  // Tombol kembali
+  let btnBack = document.getElementById("btnBack");
+  if (!btnBack) {
+    btnBack = document.createElement("button");
+    btnBack.id = "btnBack";
+    btnBack.className = "btn btn-sm btn-outline-secondary my-3";
+    btnBack.textContent = "⬅ Kembali ke Ringkasan";
+    btnBack.onclick = loadReport;
+    container.prepend(btnBack);
+  }
+}
