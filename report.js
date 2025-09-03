@@ -367,19 +367,98 @@ function renderBar(canvasId, rating) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-	  layout: { padding: 20 },
+      layout: { padding: 20 },
       plugins: {
         legend: { display: false },
-        title: { display: false, text: 'Rating Rata-rata', padding: {top:8, bottom:8} },
+        title: { display: false },
         tooltip: { enabled: true }
       },
       scales: {
         y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 }, grid: { display: true } },
         x: { grid: { display: false } }
+      },
+      // <<< Tambah onClick event di sini
+      onClick: async (evt, elements) => {
+        if (elements.length > 0) {
+          const tahun = document.getElementById("tahun").value;
+          await showYTDChart(tahun);
+        }
       }
     },
     plugins: [barLabelPlugin]
   };
 
   return new Chart(canvas, cfg);
+}
+
+
+// ---- Fungsi untuk render Year-to-Date Chart ----
+async function showYTDChart(tahun) {
+  // ambil data per bulan sepanjang tahun
+  const { data, error } = await supabase
+    .from("v_feedback_report")
+    .select("*")
+    .eq("tahun", tahun)
+    .order("bulan", { ascending: true });
+
+  if (error) {
+    console.error("YTD error:", error);
+    alert("Gagal ambil data YTD!");
+    return;
+  }
+
+  const bulanLabels = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+
+  const datasets = [
+    { key: "avg_food_quality", label: "Food Quality", color: COLORS[0] },
+    { key: "avg_beverage_quality", label: "Beverage Quality", color: COLORS[1] },
+    { key: "avg_serving_speed", label: "Serving Speed", color: COLORS[2] },
+    { key: "avg_service", label: "Service", color: COLORS[3] },
+    { key: "avg_cleanliness", label: "Cleanliness", color: COLORS[4] },
+    { key: "avg_ambience", label: "Ambience", color: COLORS[5] },
+    { key: "avg_price", label: "Price", color: COLORS[6] },
+  ].map(cfg => ({
+    label: cfg.label,
+    data: data.map(r => r[cfg.key] || 0),
+    borderColor: cfg.color,
+    backgroundColor: cfg.color,
+    tension: 0.3
+  }));
+
+  // hancurkan semua chart sebelumnya
+  ["pieAsal","pieMedia","pieAcara","pieUsia","barRating"].forEach(id => destroyIfExists(id));
+
+  const canvas = document.getElementById("barRating");
+  const ctx = canvas.getContext("2d");
+
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: bulanLabels,
+      datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "top" },
+        title: { display: true, text: `Year-to-Date Ratings (${tahun})` }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+
+  // Tambahkan tombol kembali
+  const container = canvas.closest(".card-body");
+  let btnBack = document.getElementById("btnBack");
+  if (!btnBack) {
+    btnBack = document.createElement("button");
+    btnBack.id = "btnBack";
+    btnBack.className = "btn btn-sm btn-outline-secondary mt-2";
+    btnBack.textContent = "⬅ Kembali ke Ringkasan";
+    btnBack.onclick = loadReport;
+    container.appendChild(btnBack);
+  }
 }
