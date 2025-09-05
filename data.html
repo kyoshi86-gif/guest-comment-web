@@ -2,100 +2,113 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Guest Comments Data</title>
-
-  <!-- Bootstrap -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-
-  <!-- SheetJS -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Data Guest Comments</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
-    body {
-      background-color: #f9f9f9;
-    }
-    .container {
-      margin-top: 20px;
-    }
-    .table th,
-    .table td {
-      vertical-align: middle;
-      font-size: 14px;
-    }
-    .table-success {
-      background-color: #d1f7d6 !important;
-    }
+    body { padding: 20px; }
+    table td { vertical-align: middle; }
+    .table-success { background-color: #d1e7dd !important; }
+    #saveBtn { display: none; } /* Default disembunyikan */
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2 class="mb-3">📋 Guest Comments Data</h2>
+  <div class="container-fluid">
+    <h2 class="mb-3">Guest Comments</h2>
 
     <!-- Filter -->
-    <div class="row g-2 mb-3">
-      <div class="col-md-3">
-        <input
-          type="date"
-          id="filterStart"
-          class="form-control"
-          placeholder="Tanggal Awal"
-        />
+    <div class="row mb-3">
+      <div class="col-auto">
+        <label for="filterStart" class="form-label">Tanggal Mulai:</label>
+        <input type="date" id="filterStart" class="form-control"/>
       </div>
-      <div class="col-md-3">
-        <input
-          type="date"
-          id="filterEnd"
-          class="form-control"
-          placeholder="Tanggal Akhir"
-        />
+      <div class="col-auto">
+        <label for="filterEnd" class="form-label">Tanggal Akhir:</label>
+        <input type="date" id="filterEnd" class="form-control"/>
       </div>
-      <div class="col-md-6">
+      <div class="col-auto d-flex align-items-end">
         <button id="filterBtn" class="btn btn-primary me-2">Filter</button>
+        <button id="resetBtn" class="btn btn-secondary me-2">Reset</button>
         <button id="exportBtn" class="btn btn-success">Export Excel</button>
       </div>
     </div>
 
-    <!-- Tabel -->
+    <!-- Tabel Data -->
     <div class="table-responsive">
-      <table class="table table-bordered table-hover" id="dataTable">
-        <thead class="table-light" style="text-align:center;">
+      <table id="dataTable" class="table table-bordered table-hover table-sm align-middle">
+        <thead class="table-light">
           <tr>
             <th style="text-align:center;">
-              <input type="checkbox" id="selectAll" />
+              <input type="checkbox" id="selectAll"/>
             </th>
             <th>Tanggal</th>
             <th>Jam</th>
             <th>No Meja</th>
-            <th>Nama</th>
+            <th>Nama Tamu</th>
             <th>Asal</th>
-            <th>Media</th>
-            <th>Media Lainnya</th>
-            <th>Acara</th>
-            <th>Acara Lainnya</th>
-            <th>Usia</th>
+            <th>Media Source</th>
+            <th>Media Other</th>
+            <th>Event Type</th>
+            <th>Service Other</th>
+            <th>Age Range</th>
             <th>Food Quality</th>
             <th>Beverage Quality</th>
             <th>Serving Speed</th>
-            <th>Service</th>
+            <th>Service Rating</th>
             <th>Cleanliness</th>
             <th>Ambience</th>
-            <th>Price</th>
+            <th>Price Rating</th>
             <th>Comments</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
     </div>
+
+    <!-- Tombol Simpan -->
+    <div class="mt-3">
+      <button id="saveBtn" class="btn btn-warning">Simpan</button>
+    </div>
   </div>
 
-  <!-- Script -->
   <script src="data.js"></script>
+  <script>
+    // Tambahan untuk memunculkan tombol Simpan saat ada perubahan checkbox
+    const tableBody = document.querySelector("#dataTable tbody");
+    const saveBtn = document.getElementById("saveBtn");
+
+    function checkSaveButtonVisibility() {
+      if (!window.allData) return;
+      const changed = window.allData.some(row => {
+        return Boolean(row._checked) !== Boolean(row._saved);
+      });
+      saveBtn.style.display = changed ? "inline-block" : "none";
+    }
+
+    // Observer: deteksi perubahan pada checkbox di tabel
+    const observer = new MutationObserver(() => {
+      checkSaveButtonVisibility();
+    });
+    observer.observe(tableBody, { childList: true, subtree: true });
+
+    // Hook tambahan setelah setiap render ulang tabel
+    const oldRender = window.renderTable;
+    window.renderTable = function(data) {
+      oldRender(data);
+      // Tambah event listener ke setiap checkbox agar update tombol Simpan
+      tableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
+        cb.addEventListener("change", checkSaveButtonVisibility);
+      });
+      checkSaveButtonVisibility();
+    };
+
+    // Hook setelah klik Simpan -> sembunyikan lagi tombol
+    const oldSave = document.getElementById("saveBtn").onclick;
+    document.getElementById("saveBtn").addEventListener("click", () => {
+      checkSaveButtonVisibility();
+    });
+  </script>
 </body>
 </html>
