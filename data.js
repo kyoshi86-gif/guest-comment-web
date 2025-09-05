@@ -53,7 +53,7 @@ function renderTable(data) {
 
     // Kolom Data
     const columns = [
-      "tanggal",
+      "tgl",
       "nama",
       "asal",
       "media",
@@ -71,7 +71,7 @@ function renderTable(data) {
       td.textContent = row[col] ?? "";
       td.style.whiteSpace = "normal";
       td.style.textAlign = "center";
-      if (col === "tanggal" && row[col]) {
+      if (col === "tgl" && row[col]) {
         td.textContent = formatDate(row[col]);
       }
       tr.appendChild(td);
@@ -143,7 +143,7 @@ selectAllCheckbox.addEventListener("change", (e) => {
 exportBtn.addEventListener("click", () => {
   const rows = [
     [
-      "Tanggal",
+      "tgl",
       "Nama",
       "Asal",
       "Media",
