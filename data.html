@@ -74,41 +74,38 @@
   </div>
 
   <script src="data.js"></script>
-  <script>
-    // Tambahan untuk memunculkan tombol Simpan saat ada perubahan checkbox
-    const tableBody = document.querySelector("#dataTable tbody");
-    const saveBtn = document.getElementById("saveBtn");
+<script>
+  const saveBtn = document.getElementById("saveBtn");
 
-    function checkSaveButtonVisibility() {
-      if (!window.allData) return;
-      const changed = window.allData.some(row => {
-        return Boolean(row._checked) !== Boolean(row._saved);
-      });
-      saveBtn.style.display = changed ? "inline-block" : "none";
-    }
-
-    // Observer: deteksi perubahan pada checkbox di tabel
-    const observer = new MutationObserver(() => {
-      checkSaveButtonVisibility();
+  function checkSaveButtonVisibility() {
+    if (!window.allData) return;
+    const changed = window.allData.some(row => {
+      return Boolean(row._checked) !== Boolean(row._saved);
     });
-    observer.observe(tableBody, { childList: true, subtree: true });
+    saveBtn.style.display = changed ? "inline-block" : "none";
+  }
 
-    // Hook tambahan setelah setiap render ulang tabel
-    const oldRender = window.renderTable;
-    window.renderTable = function(data) {
-      oldRender(data);
-      // Tambah event listener ke setiap checkbox agar update tombol Simpan
-      tableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
-        cb.addEventListener("change", checkSaveButtonVisibility);
-      });
-      checkSaveButtonVisibility();
-    };
+  // Observer: deteksi perubahan pada checkbox di tabel
+  const observer = new MutationObserver(() => {
+    checkSaveButtonVisibility();
+  });
+  observer.observe(tableBody, { childList: true, subtree: true });
 
-    // Hook setelah klik Simpan -> sembunyikan lagi tombol
-    const oldSave = document.getElementById("saveBtn").onclick;
-    document.getElementById("saveBtn").addEventListener("click", () => {
-      checkSaveButtonVisibility();
+  // Hook tambahan setelah setiap render ulang tabel
+  const oldRender = window.renderTable;
+  window.renderTable = function(data) {
+    oldRender(data);
+    // Tambah event listener ke setiap checkbox agar update tombol Simpan
+    tableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
+      cb.addEventListener("change", checkSaveButtonVisibility);
     });
-  </script>
+    checkSaveButtonVisibility();
+  };
+
+  // Hook setelah klik Simpan -> sembunyikan lagi tombol
+  document.getElementById("saveBtn").addEventListener("click", () => {
+    checkSaveButtonVisibility();
+  });
+</script>
 </body>
 </html>
