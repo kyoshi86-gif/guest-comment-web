@@ -176,6 +176,7 @@ async function fetchData(startDate, endDate) {
 
   allData = merged;
   renderTable(allData);
+  checkSaveButtonVisibility();
 }
 
 // --- Event Filter ---
@@ -262,7 +263,7 @@ if (saveBtn) {
     persistSavedState();
     updateSelectAllState();
     checkSaveButtonVisibility();
-    alert("Perubahan disimpan. Baris yang tersimpan berwarna hijau.");
+    alert("Perubahan disimpan.");
   });
 }
 
