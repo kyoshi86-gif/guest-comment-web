@@ -87,8 +87,8 @@ async function fetchData(startDate, endDate) {
 
   if (startDate && endDate) {
     query = query
-      .gte("tanggal", startDate.toISOString())
-      .lte("tanggal", endDate.toISOString());
+      .gte("tgl", startDate.toISOString())
+      .lte("tgl, endDate.toISOString());
   } else {
     // Default bulan berjalan
     const now = new Date();
@@ -96,11 +96,11 @@ async function fetchData(startDate, endDate) {
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     query = query
-      .gte("tanggal", firstDay.toISOString())
-      .lte("tanggal", lastDay.toISOString());
+      .gte("tgl", firstDay.toISOString())
+      .lte("tgl", lastDay.toISOString());
   }
 
-  query = query.order("tanggal", { ascending: true });
+  query = query.order("tgl", { ascending: true });
 
   const { data, error } = await query;
   if (error) {
