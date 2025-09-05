@@ -149,7 +149,9 @@ async function fetchData(startDate, endDate) {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    query = query.gte("tgl", firstDay.toISOString()).lte("tgl", lastDay.toISOString());
+    query = query
+      .gte("tgl", firstDay.toISOString())
+      .lte("tgl", lastDay.toISOString());
   }
 
   query = query.order("tgl", { ascending: true });
@@ -161,6 +163,7 @@ async function fetchData(startDate, endDate) {
     return;
   }
 
+  // merge state lama (agar _saved tetap tersimpan meski reset/filter)
   const merged = (data || []).map((row) => {
     const prev = allData.find((r) => r.id === row.id);
     if (prev) {
@@ -188,8 +191,13 @@ if (filterBtn) {
     } else {
       fetchData();
     }
+
+    // kosongkan input setelah klik filter
+    if (filterStartInput) filterStartInput.value = "";
+    if (filterEndInput) filterEndInput.value = "";
   });
 }
+
 
 // --- Event Select All ---
 if (selectAllCheckbox) {
