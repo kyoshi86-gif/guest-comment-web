@@ -1,20 +1,33 @@
-// Contoh data dummy (ini bisa diganti fetch dari server / file JSON)
-const data = [
-  {
-    no: 1, tanggal: "2025-07-19", waktu: "07:12", meja: "A1", nama: "Cornelia",
-    asal: "Yogyakarta", media: "Instagram", acara: "Dinner", usia: "25 - 35",
-    makanan: 4, minuman: 4, penyajian: 3, pelayanan: 5, kebersihan: 5, suasana: 4, harga: 4,
-    saran: "So far so good tetapi ada beberapa menu yang sold out.",
-    medsoslain: "", acaralain: ""
-  },
-  {
-    no: 2, tanggal: "2025-07-19", waktu: "10:48", meja: "A9", nama: "Escolar",
-    asal: "Luar Negeri", media: "Google", acara: "Dinner", usia: "25 - 35",
-    makanan: 4, minuman: 4, penyajian: 4, pelayanan: 5, kebersihan: 4, suasana: 5, harga: 5,
-    saran: "Tidak ada", medsoslain: "", acaralain: ""
-  }
-  // Tambahkan data lain sesuai tabel
-];
+// Load database dari file JSON (atau bisa pakai array dummy kalau offline)
+let data = [];
+
+// Coba fetch file JSON
+fetch("data.json")
+  .then(res => res.json())
+  .then(db => {
+    data = db;
+    renderTable();
+  })
+  .catch(err => {
+    console.warn("⚠️ Tidak bisa load data.json, fallback pakai data dummy.");
+    data = [
+      {
+        no: 1, tanggal: "2025-07-19", waktu: "07:12", meja: "A1", nama: "Cornelia",
+        asal: "Yogyakarta", media: "Instagram", acara: "Dinner", usia: "25 - 35",
+        makanan: 4, minuman: 4, penyajian: 3, pelayanan: 5, kebersihan: 5, suasana: 4, harga: 4,
+        saran: "So far so good tetapi ada beberapa menu yang sold out.",
+        medsoslain: "", acaralain: ""
+      },
+      {
+        no: 2, tanggal: "2025-07-19", waktu: "10:48", meja: "A9", nama: "Escolar",
+        asal: "Luar Negeri", media: "Google", acara: "Dinner", usia: "25 - 35",
+        makanan: 4, minuman: 4, penyajian: 4, pelayanan: 5, kebersihan: 4, suasana: 5, harga: 5,
+        saran: "Tidak ada", medsoslain: "", acaralain: ""
+      }
+      // Tambahkan data lain sesuai database asli
+    ];
+    renderTable();
+  });
 
 const tbody = document.getElementById("dataBody");
 
@@ -48,14 +61,12 @@ function renderTable(filtered = data) {
   });
 }
 
-renderTable();
-
-// Select All
+// Checkbox select all
 document.getElementById("selectAll").addEventListener("change", function() {
   document.querySelectorAll(".rowCheck").forEach(cb => cb.checked = this.checked);
 });
 
-// Filter
+// Filter tanggal
 document.getElementById("btnFilter").addEventListener("click", () => {
   const start = document.getElementById("startDate").value;
   const end = document.getElementById("endDate").value;
@@ -72,7 +83,7 @@ document.getElementById("btnReset").addEventListener("click", () => {
   renderTable();
 });
 
-// Save action
+// Save action → highlight hijau
 document.getElementById("btnSave").addEventListener("click", () => {
   document.querySelectorAll("#dataBody tr").forEach(tr => {
     const checkbox = tr.querySelector(".rowCheck");
@@ -81,4 +92,33 @@ document.getElementById("btnSave").addEventListener("click", () => {
     }
   });
   alert("Data berhasil disimpan!");
+});
+
+// Export Excel
+document.getElementById("btnExport").addEventListener("click", () => {
+  let table = document.querySelector("table").outerHTML;
+  let file = new Blob([table], { type: "application/vnd.ms-excel" });
+  let url = URL.createObjectURL(file);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "feedback_data.xls";
+  a.click();
+});
+
+// Export CSV
+document.getElementById("btnExportCsv").addEventListener("click", () => {
+  let csv = [];
+  let rows = document.querySelectorAll("table tr");
+  rows.forEach(row => {
+    let cols = row.querySelectorAll("td, th");
+    let line = [];
+    cols.forEach(col => line.push(`"${col.innerText}"`));
+    csv.push(line.join(","));
+  });
+  let csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+  let url = URL.createObjectURL(csvFile);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "feedback_data.csv";
+  a.click();
 });
