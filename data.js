@@ -93,7 +93,7 @@ async function loadData() {
   const { data, error } = await supabase
     .from("guest_comments")
     .select("*")
-    .gte("tanggal", startOfMonth.toISOString());
+    .gte("tgl", startOfMonth.toISOString());
 
   if (error) {
     console.error("Load data error:", error);
