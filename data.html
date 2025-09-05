@@ -73,16 +73,14 @@
     </div>
   </div>
 
-  <script src="data.js"></script>
+ <script src="data.js"></script>
 <script>
-  const saveBtn = document.getElementById("saveBtn");
-
   function checkSaveButtonVisibility() {
     if (!window.allData) return;
     const changed = window.allData.some(row => {
       return Boolean(row._checked) !== Boolean(row._saved);
     });
-    saveBtn.style.display = changed ? "inline-block" : "none";
+    document.getElementById("saveBtn").style.display = changed ? "inline-block" : "none";
   }
 
   // Observer: deteksi perubahan pada checkbox di tabel
