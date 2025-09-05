@@ -7,135 +7,158 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 let allData = [];
 let checkedIds = new Set();
 
-// === Load Data Supabase ===
-async function loadData() {
-  const today = new Date();
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split("T")[0];
-  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split("T")[0];
-
-  const { data, error } = await supabase
-    .from("guest-comments")
-    .select("*")
-    .gte("tanggal", monthStart)
-    .lte("tanggal", monthEnd)
-    .order("tanggal", { ascending: true });
-
-  if (error) {
-    console.error("Supabase error:", error);
-    return;
-  }
-
-  allData = data || [];
-  restoreChecked();
-  renderTable(allData);
+// === Simpan checkbox state ke localStorage ===
+function saveChecked() {
+  localStorage.setItem("checkedIds", JSON.stringify([...checkedIds]));
 }
 
-// === Render Table ===
+// === Load checkbox state dari localStorage ===
+function loadChecked() {
+  const saved = localStorage.getItem("checkedIds");
+  if (saved) {
+    checkedIds = new Set(JSON.parse(saved));
+  }
+}
+
+// === Render tabel ===
 function renderTable(data) {
   const tbody = document.querySelector("#dataTable tbody");
   tbody.innerHTML = "";
 
-  data.forEach((row, i) => {
-    const id = row.id || i + 1;
-    const isChecked = checkedIds.has(id);
-
+  data.forEach((row, index) => {
     const tr = document.createElement("tr");
-    if (isChecked) tr.classList.add("row-checked");
 
-    tr.innerHTML = `
-      <td><input type="checkbox" class="row-check" data-id="${id}" ${isChecked ? "checked" : ""}></td>
-      <td>${i + 1}</td>
-      <td>${row.tanggal || ""}</td>
-      <td>${row.waktu || ""}</td>
-      <td>${row.meja || ""}</td>
-      <td>${row.nama || ""}</td>
-      <td>${row.asal || ""}</td>
-      <td>${row.media || ""}</td>
-      <td>${row.acara || ""}</td>
-      <td>${row.usia || ""}</td>
-      <td>${row.makanan || ""}</td>
-      <td>${row.minuman || ""}</td>
-      <td>${row.penyajian || ""}</td>
-      <td>${row.pelayanan || ""}</td>
-      <td>${row.kebersihan || ""}</td>
-      <td>${row.suasana || ""}</td>
-      <td>${row.harga || ""}</td>
-      <td>${row.saran || ""}</td>
-      <td>${row.medsoslain || ""}</td>
-      <td>${row.acaralain || ""}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  // handle checkbox click
-  document.querySelectorAll(".row-check").forEach(cb => {
+    // checkbox
+    const tdCheck = document.createElement("td");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.classList.add("row-check");
+    cb.setAttribute("data-id", row.id);
+    if (checkedIds.has(String(row.id))) {
+      cb.checked = true;
+      tr.classList.add("row-checked");
+    }
     cb.addEventListener("change", function () {
       const id = this.getAttribute("data-id");
       if (this.checked) {
         checkedIds.add(id);
-        this.closest("tr").classList.add("row-checked");
+        tr.classList.add("row-checked");
       } else {
         checkedIds.delete(id);
-        this.closest("tr").classList.remove("row-checked");
+        tr.classList.remove("row-checked");
       }
       saveChecked();
     });
+    tdCheck.appendChild(cb);
+    tr.appendChild(tdCheck);
+
+    // isi data
+    const fields = [
+      row.tanggal,
+      row.waktu,
+      row.meja,
+      row.nama,
+      row.asal,
+      row.media_sosial,
+      row.acara,
+      row.usia,
+      row.kualitas_makanan,
+      row.kualitas_minuman,
+      row.kecepatan_penyajian,
+      row.pelayanan,
+      row.kebersihan,
+      row.suasana,
+      row.harga,
+      row.saran,
+      row.medsos_lain,
+      row.acara_lain,
+    ];
+
+    fields.forEach((f) => {
+      const td = document.createElement("td");
+      td.textContent = f ?? "";
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
   });
 }
 
-// === Filter ===
-function applyFilter() {
-  const from = document.getElementById("fromDate").value;
-  const to = document.getElementById("toDate").value;
-  let filtered = allData;
-  if (from) filtered = filtered.filter(r => r.tanggal >= from);
-  if (to) filtered = filtered.filter(r => r.tanggal <= to);
-  renderTable(filtered);
-}
+// === Load data dari Supabase ===
+async function loadData() {
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
 
-function resetFilter() {
-  document.getElementById("fromDate").value = "";
-  document.getElementById("toDate").value = "";
+  const { data, error } = await supabase
+    .from("guest-comments")
+    .select("*")
+    .gte("tanggal", startOfMonth.toISOString());
+
+  if (error) {
+    console.error("Load data error:", error);
+    return;
+  }
+
+  allData = data || [];
   renderTable(allData);
 }
 
-// === Export ===
+// === Filter data ===
+function applyFilter() {
+  const start = document.getElementById("startDate").value;
+  const end = document.getElementById("endDate").value;
+
+  let filtered = [...allData];
+
+  if (start) {
+    filtered = filtered.filter((row) => row.tanggal >= start);
+  }
+  if (end) {
+    filtered = filtered.filter((row) => row.tanggal <= end);
+  }
+
+  renderTable(filtered);
+}
+
+// === Reset filter ===
+function resetFilter() {
+  document.getElementById("startDate").value = "";
+  document.getElementById("endDate").value = "";
+  renderTable(allData);
+}
+
+// === Export Excel ===
 function exportExcel() {
   const table = document.getElementById("dataTable");
-  const wb = XLSX.utils.table_to_book(table, { sheet: "Feedback" });
-  XLSX.writeFile(wb, "feedback_database.xlsx");
+  const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+  XLSX.writeFile(wb, "data.xlsx");
 }
 
-// === Save/Restore Checked Rows ===
-function saveChecked() {
-  localStorage.setItem("checkedRows", JSON.stringify([...checkedIds]));
-}
-function restoreChecked() {
-  const stored = localStorage.getItem("checkedRows");
-  if (stored) checkedIds = new Set(JSON.parse(stored));
-}
+// === Init setelah DOM siap ===
+document.addEventListener("DOMContentLoaded", () => {
+  loadChecked();
+  loadData();
 
-// === Select All ===
-document.getElementById("selectAll").addEventListener("change", function () {
-  const checks = document.querySelectorAll(".row-check");
-  checks.forEach(cb => {
-    cb.checked = this.checked;
-    const id = cb.getAttribute("data-id");
-    if (this.checked) {
-      checkedIds.add(id);
-      cb.closest("tr").classList.add("row-checked");
-    } else {
-      checkedIds.delete(id);
-      cb.closest("tr").classList.remove("row-checked");
-    }
+  // tombol filter
+  document.getElementById("btnFilter").addEventListener("click", applyFilter);
+  document.getElementById("btnReset").addEventListener("click", resetFilter);
+  document.getElementById("btnExport").addEventListener("click", exportExcel);
+
+  // select all
+  document.getElementById("selectAll").addEventListener("change", function () {
+    const checks = document.querySelectorAll(".row-check");
+    checks.forEach((cb) => {
+      cb.checked = this.checked;
+      const id = cb.getAttribute("data-id");
+      if (this.checked) {
+        checkedIds.add(id);
+        cb.closest("tr").classList.add("row-checked");
+      } else {
+        checkedIds.delete(id);
+        cb.closest("tr").classList.remove("row-checked");
+      }
+    });
+    saveChecked();
   });
-  saveChecked();
 });
-
-// === Event Listeners ===
-document.getElementById("btnFilter").addEventListener("click", applyFilter);
-document.getElementById("btnReset").addEventListener("click", resetFilter);
-document.getElementById("btnExport").addEventListener("click", exportExcel);
-
-// === Init ===
-loadData();
