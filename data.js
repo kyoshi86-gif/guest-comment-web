@@ -91,7 +91,7 @@ async function loadData() {
   startOfMonth.setHours(0, 0, 0, 0);
 
   const { data, error } = await supabase
-    .from("guest-comments")
+    .from("guest_comments")
     .select("*")
     .gte("tanggal", startOfMonth.toISOString());
 
