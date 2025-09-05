@@ -11,7 +11,16 @@
     body { padding: 20px; }
     table td { vertical-align: middle; }
     .table-success { background-color: #d1e7dd !important; }
-    #saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #saveBtn {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #saveBtn.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
   </style>
 </head>
 <body>
@@ -69,7 +78,7 @@
 
     <!-- Tombol Simpan -->
     <div class="mt-3">
-      <button id="saveBtn" class="btn btn-warning" disabled>Simpan</button>
+      <button id="saveBtn" class="btn btn-warning">Simpan</button>
     </div>
   </div>
 
@@ -83,10 +92,14 @@
       const changed = window.allData.some(row => {
         return Boolean(row._checked) !== Boolean(row._saved);
       });
-      saveBtn.disabled = !changed;
+      if (changed) {
+        saveBtn.classList.add("active");
+      } else {
+        saveBtn.classList.remove("active");
+      }
     }
 
-    // Tambahkan observer supaya tombol simpan update jika ada checkbox berubah
+    // Observer: supaya checkbox baru ikut terpantau
     const observer = new MutationObserver(() => {
       tableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
         cb.addEventListener("change", checkSaveButtonState);
@@ -95,7 +108,7 @@
     });
     observer.observe(tableBody, { childList: true, subtree: true });
 
-    // Hook setelah render tabel
+    // Hook renderTable
     const oldRender = window.renderTable;
     window.renderTable = function(data) {
       oldRender(data);
@@ -107,6 +120,12 @@
 
     // Reset tombol setelah Simpan
     saveBtn.addEventListener("click", () => {
+      // anggap "disimpan" = tandai kondisi sekarang sebagai saved
+      if (window.allData) {
+        window.allData.forEach(row => {
+          row._saved = row._checked;
+        });
+      }
       checkSaveButtonState();
     });
   </script>
