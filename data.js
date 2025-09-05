@@ -1,4 +1,5 @@
-// data.js (diperbarui)
+// data.js (final dengan localStorage)
+
 // --- Supabase Client ---
 const SUPABASE_URL = "https://drdflrzsvfakdnhqniaa.supabase.co";
 const SUPABASE_KEY =
@@ -16,6 +17,21 @@ const filterStartInput = document.getElementById("filterStart");
 const filterEndInput = document.getElementById("filterEnd");
 
 let allData = [];
+
+// --- Global saved state (persist di localStorage) ---
+let savedState = loadSavedState();
+
+function loadSavedState() {
+  try {
+    return JSON.parse(localStorage.getItem("savedState")) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function persistSavedState() {
+  localStorage.setItem("savedState", JSON.stringify(savedState));
+}
 
 // --- Helper: format tanggal ---
 function formatDate(dateStr) {
@@ -55,19 +71,19 @@ function renderTable(data) {
     checkbox.type = "checkbox";
     checkbox.dataset.index = index;
 
-    // tampilkan checked jika _checked atau _saved
-    const checkedDefault = Boolean(row._checked) || Boolean(row._saved);
+    // cek dari savedState global
+    const isSaved = savedState[row.id] === true;
+    const checkedDefault = row._checked || isSaved;
     checkbox.checked = checkedDefault;
 
-    // restore visual
-    if (row._saved) tr.classList.add("table-success");
+    if (isSaved) tr.classList.add("table-success");
 
     checkbox.addEventListener("change", (e) => {
       row._checked = e.target.checked;
       if (e.target.checked) {
         tr.classList.add("table-success");
       } else {
-        if (!row._saved) tr.classList.remove("table-success");
+        if (!savedState[row.id]) tr.classList.remove("table-success");
       }
       checkSaveButtonVisibility();
     });
@@ -77,24 +93,11 @@ function renderTable(data) {
 
     // Kolom Data
     const columns = [
-      "tgl",
-      "jam",
-      "no_meja",
-      "nama_tamu",
-      "asal",
-      "media_source",
-      "media_other",
-      "event_type",
-      "service_other",
-      "age_range",
-      "food_quality",
-      "beverage_quality",
-      "serving_speed",
-      "service_rating",
-      "cleanliness",
-      "ambience",
-      "price_rating",
-      "comments",
+      "tgl", "jam", "no_meja", "nama_tamu", "asal",
+      "media_source", "media_other", "event_type",
+      "service_other", "age_range", "food_quality",
+      "beverage_quality", "serving_speed", "service_rating",
+      "cleanliness", "ambience", "price_rating", "comments",
     ];
 
     columns.forEach((col) => {
@@ -163,16 +166,11 @@ async function fetchData(startDate, endDate) {
     return;
   }
 
-  // merge state lama (agar _saved tetap tersimpan meski reset/filter)
+  // merge state lama dengan savedState global
   const merged = (data || []).map((row) => {
     const prev = allData.find((r) => r.id === row.id);
-    if (prev) {
-      row._checked = prev._checked;
-      row._saved = prev._saved;
-    } else {
-      row._checked = false;
-      row._saved = false;
-    }
+    row._checked = prev ? prev._checked : false;
+    row._saved = savedState[row.id] === true; // ambil dari global
     return row;
   });
 
@@ -192,12 +190,10 @@ if (filterBtn) {
       fetchData();
     }
 
-    // kosongkan input setelah klik filter
     if (filterStartInput) filterStartInput.value = "";
     if (filterEndInput) filterEndInput.value = "";
   });
 }
-
 
 // --- Event Select All ---
 if (selectAllCheckbox) {
@@ -209,11 +205,8 @@ if (selectAllCheckbox) {
       if (!tr) return;
       const checkbox = tr.querySelector("input[type=checkbox]");
       if (checkbox) checkbox.checked = checked;
-      if (checked) {
-        tr.classList.add("table-success");
-      } else {
-        if (!row._saved) tr.classList.remove("table-success");
-      }
+      if (checked) tr.classList.add("table-success");
+      else if (!row._saved) tr.classList.remove("table-success");
     });
     checkSaveButtonVisibility();
   });
@@ -228,44 +221,18 @@ if (exportBtn) {
     }
     const rows = [
       [
-        "Tanggal",
-        "Jam",
-        "No Meja",
-        "Nama Tamu",
-        "Asal",
-        "Media Source",
-        "Media Other",
-        "Event Type",
-        "Service Other",
-        "Age Range",
-        "Food Quality",
-        "Beverage Quality",
-        "Serving Speed",
-        "Service Rating",
-        "Cleanliness",
-        "Ambience",
-        "Price Rating",
-        "Comments",
+        "Tanggal", "Jam", "No Meja", "Nama Tamu", "Asal",
+        "Media Source", "Media Other", "Event Type", "Service Other",
+        "Age Range", "Food Quality", "Beverage Quality", "Serving Speed",
+        "Service Rating", "Cleanliness", "Ambience", "Price Rating", "Comments",
       ],
       ...allData.map((row) => [
-        formatDate(row.tgl),
-        row.jam ?? "",
-        row.no_meja ?? "",
-        row.nama_tamu ?? "",
-        row.asal ?? "",
-        row.media_source ?? "",
-        row.media_other ?? "",
-        row.event_type ?? "",
-        row.service_other ?? "",
-        row.age_range ?? "",
-        row.food_quality ?? "",
-        row.beverage_quality ?? "",
-        row.serving_speed ?? "",
-        row.service_rating ?? "",
-        row.cleanliness ?? "",
-        row.ambience ?? "",
-        row.price_rating ?? "",
-        row.comments ?? "",
+        formatDate(row.tgl), row.jam ?? "", row.no_meja ?? "",
+        row.nama_tamu ?? "", row.asal ?? "", row.media_source ?? "",
+        row.media_other ?? "", row.event_type ?? "", row.service_other ?? "",
+        row.age_range ?? "", row.food_quality ?? "", row.beverage_quality ?? "",
+        row.serving_speed ?? "", row.service_rating ?? "", row.cleanliness ?? "",
+        row.ambience ?? "", row.price_rating ?? "", row.comments ?? "",
       ]),
     ];
 
@@ -285,11 +252,14 @@ if (saveBtn) {
       if (!tr) return;
       const checkbox = tr.querySelector("input[type=checkbox]");
       const isChecked = checkbox ? checkbox.checked : Boolean(row._saved);
+
       row._checked = isChecked;
       row._saved = isChecked;
+      savedState[row.id] = isChecked; // update global + persist
       if (isChecked) tr.classList.add("table-success");
       else tr.classList.remove("table-success");
     });
+    persistSavedState();
     updateSelectAllState();
     checkSaveButtonVisibility();
     alert("Perubahan disimpan. Baris yang tersimpan berwarna hijau.");
