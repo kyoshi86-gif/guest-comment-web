@@ -71,19 +71,16 @@ function renderTable(data) {
     checkbox.type = "checkbox";
     checkbox.dataset.index = index;
 
-    // cek dari savedState global
-    const isSaved = savedState[row.id] === true;
-    const checkedDefault = row._checked || isSaved;
-    checkbox.checked = checkedDefault;
+    checkbox.checked = row._checked;
 
-    if (isSaved) tr.classList.add("table-success");
+    if (row._saved) tr.classList.add("table-success");
 
     checkbox.addEventListener("change", (e) => {
       row._checked = e.target.checked;
       if (e.target.checked) {
         tr.classList.add("table-success");
       } else {
-        if (!savedState[row.id]) tr.classList.remove("table-success");
+        if (!row._saved) tr.classList.remove("table-success");
       }
       checkSaveButtonVisibility();
     });
@@ -93,11 +90,11 @@ function renderTable(data) {
 
     // Kolom Data
     const columns = [
-      "tgl", "jam", "no_meja", "nama_tamu", "asal",
-      "media_source", "media_other", "event_type",
-      "service_other", "age_range", "food_quality",
-      "beverage_quality", "serving_speed", "service_rating",
-      "cleanliness", "ambience", "price_rating", "comments",
+      "tgl","jam","no_meja","nama_tamu","asal",
+      "media_source","media_other","event_type",
+      "service_other","age_range","food_quality",
+      "beverage_quality","serving_speed","service_rating",
+      "cleanliness","ambience","price_rating","comments",
     ];
 
     columns.forEach((col) => {
@@ -166,17 +163,15 @@ async function fetchData(startDate, endDate) {
     return;
   }
 
-  // merge state lama dengan savedState global
+  // assign state baru: _checked selalu sama dengan _saved
   const merged = (data || []).map((row) => {
-    const prev = allData.find((r) => r.id === row.id);
-    row._checked = prev ? prev._checked : false;
-    row._saved = savedState[row.id] === true; // ambil dari global
+    row._saved = savedState[row.id] === true;
+    row._checked = row._saved; // biar tidak dianggap ada perubahan
     return row;
   });
 
   allData = merged;
   renderTable(allData);
-  checkSaveButtonVisibility();
 }
 
 // --- Event Filter ---
