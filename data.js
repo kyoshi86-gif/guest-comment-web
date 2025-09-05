@@ -28,6 +28,18 @@ function formatDate(dateStr) {
   });
 }
 
+// --- Check tombol Simpan ---
+function checkSaveButtonVisibility() {
+  if (!allData || allData.length === 0) {
+    saveBtn.style.display = "none";
+    return;
+  }
+  const changed = allData.some(
+    (row) => Boolean(row._checked) !== Boolean(row._saved)
+  );
+  saveBtn.style.display = changed ? "inline-block" : "none";
+}
+
 // --- Render Table ---
 function renderTable(data) {
   if (!tableBody) return;
@@ -43,29 +55,27 @@ function renderTable(data) {
     checkbox.type = "checkbox";
     checkbox.dataset.index = index;
 
-    // tampilkan checked jika _checked atau _saved (saved dianggap default tercentang)
+    // tampilkan checked jika _checked atau _saved
     const checkedDefault = Boolean(row._checked) || Boolean(row._saved);
     checkbox.checked = checkedDefault;
 
-    // restore visual (jika saved)
+    // restore visual
     if (row._saved) tr.classList.add("table-success");
 
     checkbox.addEventListener("change", (e) => {
-      // update _checked sesuai interaksi user
       row._checked = e.target.checked;
-      // visual: jika dicentang tampil hijau sementara; jika tidak dicentang dan belum saved hapus warna
       if (e.target.checked) {
         tr.classList.add("table-success");
       } else {
-        // hanya hilangkan warna jika user juga belum menyimpan (row._saved === false)
         if (!row._saved) tr.classList.remove("table-success");
       }
+      checkSaveButtonVisibility();
     });
 
     tdCheck.appendChild(checkbox);
     tr.appendChild(tdCheck);
 
-    // Kolom Data (wrap text & center)
+    // Kolom Data
     const columns = [
       "tgl",
       "jam",
@@ -102,8 +112,8 @@ function renderTable(data) {
     tableBody.appendChild(tr);
   });
 
-  // update selectAll checkbox state
   updateSelectAllState();
+  checkSaveButtonVisibility();
 }
 
 function updateSelectAllState() {
@@ -128,7 +138,6 @@ function updateSelectAllState() {
 }
 
 // --- Fetch Data dari Supabase ---
-// startDate/endDate: JS Date object (optional)
 async function fetchData(startDate, endDate) {
   let query = supabase.from("guest_comments").select("*");
 
@@ -137,7 +146,6 @@ async function fetchData(startDate, endDate) {
       .gte("tgl", startDate.toISOString())
       .lte("tgl", endDate.toISOString());
   } else {
-    // Default: bulan berjalan
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -153,16 +161,14 @@ async function fetchData(startDate, endDate) {
     return;
   }
 
-  // merge state lama (jika ada) berdasarkan id agar _checked/_saved tidak hilang saat reload
   const merged = (data || []).map((row) => {
     const prev = allData.find((r) => r.id === row.id);
     if (prev) {
       row._checked = prev._checked;
       row._saved = prev._saved;
     } else {
-      // jika tidak ada state sebelumnya, biarkan apa adanya (tidak di-check)
-      row._checked = Boolean(row._checked) || false;
-      row._saved = Boolean(row._saved) || false;
+      row._checked = false;
+      row._saved = false;
     }
     return row;
   });
@@ -180,7 +186,7 @@ if (filterBtn) {
     if (startVal && endVal) {
       fetchData(new Date(startVal), new Date(endVal));
     } else {
-      fetchData(); // default bulan berjalan
+      fetchData();
     }
   });
 }
@@ -189,7 +195,6 @@ if (filterBtn) {
 if (selectAllCheckbox) {
   selectAllCheckbox.addEventListener("change", (e) => {
     const checked = e.target.checked;
-    // update only _checked (temporary), don't modify _saved until user clicks Save
     allData.forEach((row, index) => {
       row._checked = checked;
       const tr = tableBody.children[index];
@@ -199,19 +204,18 @@ if (selectAllCheckbox) {
       if (checked) {
         tr.classList.add("table-success");
       } else {
-        // jika unchecked, only remove color if not saved
         if (!row._saved) tr.classList.remove("table-success");
       }
     });
+    checkSaveButtonVisibility();
   });
 }
 
 // --- Export Excel ---
-// (menggunakan SheetJS jika sudah include library XLSX di HTML)
 if (exportBtn) {
   exportBtn.addEventListener("click", () => {
     if (typeof XLSX === "undefined") {
-      alert("Library XLSX tidak ditemukan. Pastikan include SheetJS (xlsx.full.min.js).");
+      alert("Library XLSX tidak ditemukan.");
       return;
     }
     const rows = [
@@ -265,36 +269,30 @@ if (exportBtn) {
 }
 
 // --- Event Save ---
-// Commit saved state to reflect current checkboxes: saved = checked, unsaved = unchecked
 if (saveBtn) {
   saveBtn.addEventListener("click", () => {
-    // apply current checkbox states to data and saved flag
     const rows = tableBody.querySelectorAll("tr");
     allData.forEach((row, index) => {
       const tr = rows[index];
       if (!tr) return;
       const checkbox = tr.querySelector("input[type=checkbox]");
       const isChecked = checkbox ? checkbox.checked : Boolean(row._saved);
-      // commit: saved = current checked
       row._checked = isChecked;
       row._saved = isChecked;
       if (isChecked) tr.classList.add("table-success");
       else tr.classList.remove("table-success");
     });
     updateSelectAllState();
+    checkSaveButtonVisibility();
     alert("Perubahan disimpan. Baris yang tersimpan berwarna hijau.");
   });
 }
 
 // --- Event Reset ---
-// Reset hanya mengembalikan ke kondisi default (bulan berjalan), TIDAK menghapus centang / warna yang sudah tersimpan.
 if (resetBtn) {
   resetBtn.addEventListener("click", () => {
-    // kosongkan input filter tanggal di UI
     if (filterStartInput) filterStartInput.value = "";
     if (filterEndInput) filterEndInput.value = "";
-
-    // fetch default month (merge akan menjaga _saved/_checked bila id sama)
     fetchData();
   });
 }
