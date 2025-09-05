@@ -172,6 +172,7 @@ async function fetchData(startDate, endDate) {
 
   allData = merged;
   renderTable(allData);
+  checkSaveButtonVisibility();
 }
 
 // --- Event Filter ---
