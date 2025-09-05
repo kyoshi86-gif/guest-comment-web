@@ -74,36 +74,36 @@
   </div>
 
  <script src="data.js"></script>
-<script>
-  function checkSaveButtonVisibility() {
-    if (!window.allData) return;
-    const changed = window.allData.some(row => {
-      return Boolean(row._checked) !== Boolean(row._saved);
-    });
-    document.getElementById("saveBtn").style.display = changed ? "inline-block" : "none";
-  }
+	<script>
+	  function checkSaveButtonVisibility() {
+		if (!window.allData) return;
+		const changed = window.allData.some(row => {
+		  return Boolean(row._checked) !== Boolean(row._saved);
+		});
+		document.getElementById("saveBtn").style.display = changed ? "inline-block" : "none";
+	  }
 
-  // Observer: deteksi perubahan pada checkbox di tabel
-  const observer = new MutationObserver(() => {
-    checkSaveButtonVisibility();
-  });
-  observer.observe(tableBody, { childList: true, subtree: true });
+	  // Observer: deteksi perubahan pada checkbox di tabel
+	  const observer = new MutationObserver(() => {
+		checkSaveButtonVisibility();
+	  });
+	  observer.observe(tableBody, { childList: true, subtree: true });
 
-  // Hook tambahan setelah setiap render ulang tabel
-  const oldRender = window.renderTable;
-  window.renderTable = function(data) {
-    oldRender(data);
-    // Tambah event listener ke setiap checkbox agar update tombol Simpan
-    tableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
-      cb.addEventListener("change", checkSaveButtonVisibility);
-    });
-    checkSaveButtonVisibility();
-  };
+	  // Hook tambahan setelah setiap render ulang tabel
+	  const oldRender = window.renderTable;
+	  window.renderTable = function(data) {
+		oldRender(data);
+		// Tambah event listener ke setiap checkbox agar update tombol Simpan
+		tableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
+		  cb.addEventListener("change", checkSaveButtonVisibility);
+		});
+		checkSaveButtonVisibility();
+	  };
 
-  // Hook setelah klik Simpan -> sembunyikan lagi tombol
-  document.getElementById("saveBtn").addEventListener("click", () => {
-    checkSaveButtonVisibility();
-  });
-</script>
-</body>
+	  // Hook setelah klik Simpan -> sembunyikan lagi tombol
+	  document.getElementById("saveBtn").addEventListener("click", () => {
+		checkSaveButtonVisibility();
+	  });
+	</script>
+	</body>
 </html>
