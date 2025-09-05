@@ -1,124 +1,120 @@
-// Load database dari file JSON (atau bisa pakai array dummy kalau offline)
-let data = [];
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// Coba fetch file JSON
-fetch("data.json")
-  .then(res => res.json())
-  .then(db => {
-    data = db;
-    renderTable();
-  })
-  .catch(err => {
-    console.warn("⚠️ Tidak bisa load data.json, fallback pakai data dummy.");
-    data = [
-      {
-        no: 1, tanggal: "2025-07-19", waktu: "07:12", meja: "A1", nama: "Cornelia",
-        asal: "Yogyakarta", media: "Instagram", acara: "Dinner", usia: "25 - 35",
-        makanan: 4, minuman: 4, penyajian: 3, pelayanan: 5, kebersihan: 5, suasana: 4, harga: 4,
-        saran: "So far so good tetapi ada beberapa menu yang sold out.",
-        medsoslain: "", acaralain: ""
-      },
-      {
-        no: 2, tanggal: "2025-07-19", waktu: "10:48", meja: "A9", nama: "Escolar",
-        asal: "Luar Negeri", media: "Google", acara: "Dinner", usia: "25 - 35",
-        makanan: 4, minuman: 4, penyajian: 4, pelayanan: 5, kebersihan: 4, suasana: 5, harga: 5,
-        saran: "Tidak ada", medsoslain: "", acaralain: ""
-      }
-      // Tambahkan data lain sesuai database asli
-    ];
-    renderTable();
-  });
+const supabaseUrl = "https://drdflrzsvfakdnhqniaa.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-const tbody = document.getElementById("dataBody");
+let allData = [];
+let checkedIds = new Set();
 
-function renderTable(filtered = data) {
+async function loadData() {
+  const { data, error } = await supabase
+    .from("guest-comments")
+    .select("*")
+    .order("tanggal", { ascending: true });
+
+  if (error) {
+    console.error("Supabase error:", error);
+    return;
+  }
+  allData = data || [];
+  renderTable(allData);
+}
+
+function renderTable(data) {
+  const tbody = document.querySelector("#dataTable tbody");
   tbody.innerHTML = "";
-  filtered.forEach(row => {
+  data.forEach((row, i) => {
+    const id = row.id || i+1;
+    const isChecked = checkedIds.has(id);
+
     const tr = document.createElement("tr");
+    if (isChecked) tr.classList.add("row-checked");
+
     tr.innerHTML = `
-      <td><input type="checkbox" class="rowCheck"></td>
-      <td>${row.no}</td>
-      <td>${row.tanggal}</td>
-      <td>${row.waktu}</td>
-      <td>${row.meja}</td>
-      <td>${row.nama}</td>
-      <td>${row.asal}</td>
-      <td>${row.media}</td>
-      <td>${row.acara}</td>
-      <td>${row.usia}</td>
-      <td>${row.makanan}</td>
-      <td>${row.minuman}</td>
-      <td>${row.penyajian}</td>
-      <td>${row.pelayanan}</td>
-      <td>${row.kebersihan}</td>
-      <td>${row.suasana}</td>
-      <td>${row.harga}</td>
-      <td class="wrap">${row.saran}</td>
-      <td>${row.medsoslain}</td>
-      <td>${row.acaralain}</td>
+      <td><input type="checkbox" class="row-check" data-id="${id}" ${isChecked ? "checked" : ""}></td>
+      <td>${i+1}</td>
+      <td>${row.tanggal || ""}</td>
+      <td>${row.waktu || ""}</td>
+      <td>${row.meja || ""}</td>
+      <td>${row.nama || ""}</td>
+      <td>${row.asal || ""}</td>
+      <td>${row.media || ""}</td>
+      <td>${row.acara || ""}</td>
+      <td>${row.usia || ""}</td>
+      <td>${row.makanan || ""}</td>
+      <td>${row.minuman || ""}</td>
+      <td>${row.penyajian || ""}</td>
+      <td>${row.pelayanan || ""}</td>
+      <td>${row.kebersihan || ""}</td>
+      <td>${row.suasana || ""}</td>
+      <td>${row.harga || ""}</td>
+      <td>${row.saran || ""}</td>
     `;
     tbody.appendChild(tr);
   });
+
+  document.querySelectorAll(".row-check").forEach(cb => {
+    cb.addEventListener("change", function() {
+      const id = this.getAttribute("data-id");
+      if (this.checked) {
+        checkedIds.add(id);
+        this.closest("tr").classList.add("row-checked");
+      } else {
+        checkedIds.delete(id);
+        this.closest("tr").classList.remove("row-checked");
+      }
+    });
+  });
 }
 
-// Checkbox select all
-document.getElementById("selectAll").addEventListener("change", function() {
-  document.querySelectorAll(".rowCheck").forEach(cb => cb.checked = this.checked);
-});
-
-// Filter tanggal
-document.getElementById("btnFilter").addEventListener("click", () => {
-  const start = document.getElementById("startDate").value;
-  const end = document.getElementById("endDate").value;
-  let filtered = data;
-  if (start && end) {
-    filtered = data.filter(d => d.tanggal >= start && d.tanggal <= end);
-  }
+function applyFilter() {
+  const from = document.getElementById("fromDate").value;
+  const to = document.getElementById("toDate").value;
+  let filtered = allData;
+  if (from) filtered = filtered.filter(r => r.tanggal >= from);
+  if (to) filtered = filtered.filter(r => r.tanggal <= to);
   renderTable(filtered);
-});
+}
 
-document.getElementById("btnReset").addEventListener("click", () => {
-  document.getElementById("startDate").value = "";
-  document.getElementById("endDate").value = "";
-  renderTable();
-});
+function saveSelection() {
+  localStorage.setItem("checkedRows", JSON.stringify([...checkedIds]));
+  alert(`${checkedIds.size} baris ditandai & disimpan.`);
+}
 
-// Save action → highlight hijau
-document.getElementById("btnSave").addEventListener("click", () => {
-  document.querySelectorAll("#dataBody tr").forEach(tr => {
-    const checkbox = tr.querySelector(".rowCheck");
-    if (checkbox && checkbox.checked) {
-      tr.classList.add("table-success");
+function restoreChecked() {
+  const stored = localStorage.getItem("checkedRows");
+  if (stored) checkedIds = new Set(JSON.parse(stored));
+}
+
+function exportExcel() {
+  const table = document.getElementById("dataTable");
+  const wb = XLSX.utils.table_to_book(table, { sheet: "Feedback" });
+  XLSX.writeFile(wb, "database_feedback.xlsx");
+}
+
+document.getElementById("selectAll").addEventListener("change", function() {
+  const checks = document.querySelectorAll(".row-check");
+  checks.forEach(cb => {
+    cb.checked = this.checked;
+    const id = cb.getAttribute("data-id");
+    if (this.checked) {
+      checkedIds.add(id);
+      cb.closest("tr").classList.add("row-checked");
+    } else {
+      checkedIds.delete(id);
+      cb.closest("tr").classList.remove("row-checked");
     }
   });
-  alert("Data berhasil disimpan!");
 });
 
-// Export Excel
-document.getElementById("btnExport").addEventListener("click", () => {
-  let table = document.querySelector("table").outerHTML;
-  let file = new Blob([table], { type: "application/vnd.ms-excel" });
-  let url = URL.createObjectURL(file);
-  let a = document.createElement("a");
-  a.href = url;
-  a.download = "feedback_data.xls";
-  a.click();
-});
+// ✅ expose ke global supaya bisa dipanggil dari onclick HTML
+window.applyFilter = applyFilter;
+window.saveSelection = saveSelection;
+window.exportExcel = exportExcel;
 
-// Export CSV
-document.getElementById("btnExportCsv").addEventListener("click", () => {
-  let csv = [];
-  let rows = document.querySelectorAll("table tr");
-  rows.forEach(row => {
-    let cols = row.querySelectorAll("td, th");
-    let line = [];
-    cols.forEach(col => line.push(`"${col.innerText}"`));
-    csv.push(line.join(","));
-  });
-  let csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
-  let url = URL.createObjectURL(csvFile);
-  let a = document.createElement("a");
-  a.href = url;
-  a.download = "feedback_data.csv";
-  a.click();
-});
+restoreChecked();
+loadData();
+
+</script>
