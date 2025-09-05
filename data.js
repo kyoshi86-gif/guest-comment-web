@@ -1,7 +1,6 @@
-
 // --- Supabase Client ---
 const SUPABASE_URL = "https://drdflrzsvfakdnhqniaa.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8"; // ganti dengan anon key kamu
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8"; 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const tableBody = document.querySelector("#dataTable tbody");
@@ -13,6 +12,7 @@ let allData = [];
 
 // --- Helper: format tanggal ---
 function formatDate(dateStr) {
+  if (!dateStr) return "";
   const date = new Date(dateStr);
   return date.toLocaleDateString("id-ID", {
     year: "numeric",
@@ -54,33 +54,34 @@ function renderTable(data) {
     // Kolom Data
     const columns = [
       "tgl",
-	  "jam",
-	  "no_meja",
+      "jam",
+      "no_meja",
       "nama_tamu",
       "asal",
       "media_source",
-	  "media_other",
+      "media_other",
       "event_type",
-	  "service_other",
+      "service_other",
       "age_range",
       "food_quality",
       "beverage_quality",
       "serving_speed",
-	  "service_rating",
-	  "cleanliness",
+      "service_rating",
+      "cleanliness",
       "ambience",
       "price_rating",
-	  "comments",
+      "comments"
     ];
 
     columns.forEach((col) => {
       const td = document.createElement("td");
-      td.textContent = row[col] ?? "";
-      td.style.whiteSpace = "normal";
-      td.style.textAlign = "center";
       if (col === "tgl" && row[col]) {
         td.textContent = formatDate(row[col]);
+      } else {
+        td.textContent = row[col] ?? "";
       }
+      td.style.whiteSpace = "normal";
+      td.style.textAlign = "center";
       tr.appendChild(td);
     });
 
@@ -95,7 +96,7 @@ async function fetchData(startDate, endDate) {
   if (startDate && endDate) {
     query = query
       .gte("tgl", startDate.toISOString())
-      .lte("tgl, endDate.toISOString());
+      .lte("tgl", endDate.toISOString());
   } else {
     // Default bulan berjalan
     const now = new Date();
@@ -137,7 +138,7 @@ selectAllCheckbox.addEventListener("change", (e) => {
     row._checked = checked;
     const tr = tableBody.children[index];
     const checkbox = tr.querySelector("input[type=checkbox]");
-    checkbox.checked = checked;
+    if (checkbox) checkbox.checked = checked;
     if (checked) {
       tr.classList.add("table-success");
     } else {
@@ -150,38 +151,45 @@ selectAllCheckbox.addEventListener("change", (e) => {
 exportBtn.addEventListener("click", () => {
   const rows = [
     [
-      "tgl",
-	  "jam",
-	  "no_meja",
-      "nama_tamu",
-      "asal",
-      "media_source",
-	  "media_other",
-      "event_type",
-	  "service_other",
-      "age_range",
-      "food_quality",
-      "beverage_quality",
-      "serving_speed",
-	  "service_rating",
-	  "cleanliness",
-      "ambience",
-      "price_rating",
-	  "comments",
+      "Tanggal",
+      "Jam",
+      "No Meja",
+      "Nama Tamu",
+      "Asal",
+      "Media Source",
+      "Media Other",
+      "Event Type",
+      "Service Other",
+      "Age Range",
+      "Food Quality",
+      "Beverage Quality",
+      "Serving Speed",
+      "Service Rating",
+      "Cleanliness",
+      "Ambience",
+      "Price Rating",
+      "Comments"
     ],
     ...allData.map((row) => [
-      formatDate(row.tanggal),
-      row.nama ?? "",
+      formatDate(row.tgl),
+      row.jam ?? "",
+      row.no_meja ?? "",
+      row.nama_tamu ?? "",
       row.asal ?? "",
-      row.media ?? "",
-      row.acara ?? "",
-      row.usia ?? "",
+      row.media_source ?? "",
+      row.media_other ?? "",
+      row.event_type ?? "",
+      row.service_other ?? "",
+      row.age_range ?? "",
       row.food_quality ?? "",
       row.beverage_quality ?? "",
-      row.service_quality ?? "",
+      row.serving_speed ?? "",
+      row.service_rating ?? "",
+      row.cleanliness ?? "",
       row.ambience ?? "",
-      row.value_for_money ?? "",
-    ]),
+      row.price_rating ?? "",
+      row.comments ?? ""
+    ])
   ];
 
   const worksheet = XLSX.utils.aoa_to_sheet(rows);
