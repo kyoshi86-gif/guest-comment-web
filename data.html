@@ -1,60 +1,120 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>Database Feedback</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
-    h2 { margin-bottom: 10px; }
-    .controls { margin-bottom: 15px; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: center; word-wrap: break-word; }
-    th { background: #f0f0f0; position: sticky; top: 0; z-index: 2; }
-    tr:nth-child(even) { background: #f9f9f9; }
-    button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
-    .btn-green { background: #28a745; color: white; }
-    .btn-blue { background: #007bff; color: white; }
-    .row-checked { background-color: #c8f7c5 !important; }
-  </style>
-</head>
-<body>
-
-  <h2>📊 Database Feedback Pelanggan</h2>
-
-  <div class="controls">
-    <label>Dari: <input type="date" id="fromDate"></label>
-    <label>Sampai: <input type="date" id="toDate"></label>
-    <button class="btn-blue" onclick="applyFilter()">Filter</button>
-    <button class="btn-green" onclick="saveSelection()">Simpan</button>
-    <button class="btn-blue" onclick="exportExcel()">Ekspor Excel</button>
-  </div>
-
-  <table id="dataTable">
-    <thead>
-      <tr>
-        <th><input type="checkbox" id="selectAll"></th>
-        <th>No</th>
-        <th>Tanggal</th>
-        <th>Waktu</th>
-        <th>Meja</th>
-        <th>Nama</th>
-        <th>Asal</th>
-        <th>Media</th>
-        <th>Acara</th>
-        <th>Usia</th>
-        <th>Makanan</th>
-        <th>Minuman</th>
-        <th>Penyajian</th>
-        <th>Pelayanan</th>
-        <th>Kebersihan</th>
-        <th>Suasana</th>
-        <th>Harga</th>
-        <th>Saran</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
 <script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabaseUrl = "https://YOUR_PROJECT.supabase.co";
+const supabaseKey = "YOUR_ANON_KEY";
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+let allData = [];
+let checkedIds = new Set();
+
+async function loadData() {
+  const { data, error } = await supabase
+    .from("guest-comments")
+    .select("*")
+    .order("tanggal", { ascending: true });
+
+  if (error) {
+    console.error("Supabase error:", error);
+    return;
+  }
+  allData = data || [];
+  renderTable(allData);
+}
+
+function renderTable(data) {
+  const tbody = document.querySelector("#dataTable tbody");
+  tbody.innerHTML = "";
+  data.forEach((row, i) => {
+    const id = row.id || i+1;
+    const isChecked = checkedIds.has(id);
+
+    const tr = document.createElement("tr");
+    if (isChecked) tr.classList.add("row-checked");
+
+    tr.innerHTML = `
+      <td><input type="checkbox" class="row-check" data-id="${id}" ${isChecked ? "checked" : ""}></td>
+      <td>${i+1}</td>
+      <td>${row.tanggal || ""}</td>
+      <td>${row.waktu || ""}</td>
+      <td>${row.meja || ""}</td>
+      <td>${row.nama || ""}</td>
+      <td>${row.asal || ""}</td>
+      <td>${row.media || ""}</td>
+      <td>${row.acara || ""}</td>
+      <td>${row.usia || ""}</td>
+      <td>${row.makanan || ""}</td>
+      <td>${row.minuman || ""}</td>
+      <td>${row.penyajian || ""}</td>
+      <td>${row.pelayanan || ""}</td>
+      <td>${row.kebersihan || ""}</td>
+      <td>${row.suasana || ""}</td>
+      <td>${row.harga || ""}</td>
+      <td>${row.saran || ""}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.querySelectorAll(".row-check").forEach(cb => {
+    cb.addEventListener("change", function() {
+      const id = this.getAttribute("data-id");
+      if (this.checked) {
+        checkedIds.add(id);
+        this.closest("tr").classList.add("row-checked");
+      } else {
+        checkedIds.delete(id);
+        this.closest("tr").classList.remove("row-checked");
+      }
+    });
+  });
+}
+
+function applyFilter() {
+  const from = document.getElementById("fromDate").value;
+  const to = document.getElementById("toDate").value;
+  let filtered = allData;
+  if (from) filtered = filtered.filter(r => r.tanggal >= from);
+  if (to) filtered = filtered.filter(r => r.tanggal <= to);
+  renderTable(filtered);
+}
+
+function saveSelection() {
+  localStorage.setItem("checkedRows", JSON.stringify([...checkedIds]));
+  alert(`${checkedIds.size} baris ditandai & disimpan.`);
+}
+
+function restoreChecked() {
+  const stored = localStorage.getItem("checkedRows");
+  if (stored) checkedIds = new Set(JSON.parse(stored));
+}
+
+function exportExcel() {
+  const table = document.getElementById("dataTable");
+  const wb = XLSX.utils.table_to_book(table, { sheet: "Feedback" });
+  XLSX.writeFile(wb, "database_feedback.xlsx");
+}
+
+document.getElementById("selectAll").addEventListener("change", function() {
+  const checks = document.querySelectorAll(".row-check");
+  checks.forEach(cb => {
+    cb.checked = this.checked;
+    const id = cb.getAttribute("data-id");
+    if (this.checked) {
+      checkedIds.add(id);
+      cb.closest("tr").classList.add("row-checked");
+    } else {
+      checkedIds.delete(id);
+      cb.closest("tr").classList.remove("row-checked");
+    }
+  });
+});
+
+// ✅ expose ke global supaya bisa dipanggil dari onclick HTML
+window.applyFilter = applyFilter;
+window.saveSelection = saveSelection;
+window.exportExcel = exportExcel;
+
+restoreChecked();
+loadData();
+
+</script>
