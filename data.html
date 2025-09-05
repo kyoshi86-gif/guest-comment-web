@@ -9,13 +9,13 @@
     h2 { margin-bottom: 10px; }
     .controls { margin-bottom: 15px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: center; word-wrap: break-word; }
     th { background: #f0f0f0; position: sticky; top: 0; z-index: 2; }
     tr:nth-child(even) { background: #f9f9f9; }
     button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
     .btn-green { background: #28a745; color: white; }
     .btn-blue { background: #007bff; color: white; }
-    input[type="date"] { padding: 4px; }
+    .row-checked { background-color: #c8f7c5 !important; }
   </style>
 </head>
 <body>
@@ -27,7 +27,7 @@
     <label>Sampai: <input type="date" id="toDate"></label>
     <button class="btn-blue" onclick="applyFilter()">Filter</button>
     <button class="btn-green" onclick="saveSelection()">Simpan</button>
-    <button class="btn-blue" onclick="exportCSV()">Ekspor CSV</button>
+    <button class="btn-blue" onclick="exportExcel()">Ekspor Excel</button>
   </div>
 
   <table id="dataTable">
@@ -58,16 +58,15 @@
 
 <script>
 let allData = [];
+let checkedIds = new Set(); // simpan ID baris yang dicentang
 
-async function loadData() {
-  try {
-    const res = await fetch("data.json");
-    allData = await res.json();
-  } catch (e) {
-    console.error("Gagal load data.json, pakai dummy.");
-    allData = [
-      {no:1,tanggal:"2025-07-19",waktu:"07:12",meja:"A1",nama:"Cornelia",asal:"Yogyakarta",media:"Instagram",acara:"Dinner",usia:"25-35",makanan:4,minuman:4,penyajian:3,pelayanan:5,kebersihan:5,suasana:4,harga:4,saran:"So far so good"}
-    ];
+// Ambil data dari localStorage (disimpan di index.html)
+function loadData() {
+  const stored = localStorage.getItem("feedbackData");
+  if (stored) {
+    allData = JSON.parse(stored);
+  } else {
+    allData = []; // kosong kalau belum ada input
   }
   renderTable(allData);
 }
@@ -75,11 +74,16 @@ async function loadData() {
 function renderTable(data) {
   const tbody = document.querySelector("#dataTable tbody");
   tbody.innerHTML = "";
-  data.forEach(row => {
+  data.forEach((row, i) => {
+    const id = row.no || i+1;
+    const isChecked = checkedIds.has(id);
+
     const tr = document.createElement("tr");
+    if (isChecked) tr.classList.add("row-checked");
+
     tr.innerHTML = `
-      <td><input type="checkbox" class="row-check"></td>
-      <td>${row.no}</td>
+      <td><input type="checkbox" class="row-check" data-id="${id}" ${isChecked ? "checked" : ""}></td>
+      <td>${id}</td>
       <td>${row.tanggal}</td>
       <td>${row.waktu}</td>
       <td>${row.meja}</td>
@@ -99,6 +103,20 @@ function renderTable(data) {
     `;
     tbody.appendChild(tr);
   });
+
+  // Rebind event listener ke checkbox
+  document.querySelectorAll(".row-check").forEach(cb => {
+    cb.addEventListener("change", function() {
+      const id = this.getAttribute("data-id");
+      if (this.checked) {
+        checkedIds.add(id);
+        this.closest("tr").classList.add("row-checked");
+      } else {
+        checkedIds.delete(id);
+        this.closest("tr").classList.remove("row-checked");
+      }
+    });
+  });
 }
 
 // Filter tanggal
@@ -113,42 +131,42 @@ function applyFilter() {
 
 // Simpan (ceklist)
 function saveSelection() {
-  const checkedRows = [...document.querySelectorAll(".row-check:checked")];
-  const selected = checkedRows.map(cb => {
-    const row = cb.closest("tr");
-    const cells = row.querySelectorAll("td");
-    return {
-      no: cells[1].innerText,
-      nama: cells[5].innerText,
-      media: cells[7].innerText,
-      saran: cells[17].innerText
-    };
-  });
-  alert("Data tersimpan:\n" + JSON.stringify(selected, null, 2));
+  localStorage.setItem("checkedRows", JSON.stringify([...checkedIds]));
+  alert(`${checkedIds.size} baris ditandai & disimpan.`);
 }
 
-// Ekspor CSV
-function exportCSV() {
-  let csv = "";
-  const rows = document.querySelectorAll("table tr");
-  rows.forEach(row => {
-    const cols = row.querySelectorAll("td, th");
-    const line = [...cols].map(c => `"${c.innerText}"`).join(",");
-    csv += line + "\n";
-  });
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "database_feedback.csv";
-  a.click();
+// Ekspor Excel
+function exportExcel() {
+  const table = document.getElementById("dataTable");
+  const wb = XLSX.utils.table_to_book(table, { sheet: "Feedback" });
+  XLSX.writeFile(wb, "database_feedback.xlsx");
 }
 
+// Select All
 document.getElementById("selectAll").addEventListener("change", function() {
   const checks = document.querySelectorAll(".row-check");
-  checks.forEach(cb => cb.checked = this.checked);
+  checks.forEach(cb => {
+    cb.checked = this.checked;
+    const id = cb.getAttribute("data-id");
+    if (this.checked) {
+      checkedIds.add(id);
+      cb.closest("tr").classList.add("row-checked");
+    } else {
+      checkedIds.delete(id);
+      cb.closest("tr").classList.remove("row-checked");
+    }
+  });
 });
 
+// Restore status checkbox dari localStorage
+function restoreChecked() {
+  const stored = localStorage.getItem("checkedRows");
+  if (stored) {
+    checkedIds = new Set(JSON.parse(stored));
+  }
+}
+
+restoreChecked();
 loadData();
 </script>
 </body>
