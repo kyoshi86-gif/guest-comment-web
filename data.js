@@ -1,4 +1,4 @@
-// data.js (final dengan localStorage)
+// data.js (final dengan localStorage + highlight rating 1/2)
 
 // --- Supabase Client ---
 const SUPABASE_URL = "https://drdflrzsvfakdnhqniaa.supabase.co";
@@ -61,6 +61,17 @@ function renderTable(data) {
   if (!tableBody) return;
   tableBody.innerHTML = "";
 
+  // kolom yang harus dicek untuk highlight nilai 1/2
+  const highlightCols = [
+    "food_quality",
+    "beverage_quality",
+    "serving_speed",
+    "service_rating",
+    "cleanliness",
+    "ambience",
+    "price_rating",
+  ];
+
   data.forEach((row, index) => {
     const tr = document.createElement("tr");
 
@@ -101,11 +112,23 @@ function renderTable(data) {
       const td = document.createElement("td");
       td.style.whiteSpace = "normal";
       td.style.textAlign = "center";
+
+      let value = row[col] ?? "";
       if (col === "tgl" && row[col]) {
-        td.textContent = formatDate(row[col]);
-      } else {
-        td.textContent = row[col] ?? "";
+        value = formatDate(row[col]);
       }
+
+      td.textContent = value;
+
+      // highlight merah kalau nilainya 1 atau 2
+      if (highlightCols.includes(col)) {
+        if (String(value).trim() === "1" || String(value).trim() === "2") {
+          td.style.backgroundColor = "red";
+          td.style.color = "white";
+          td.style.fontWeight = "bold";
+        }
+      }
+
       tr.appendChild(td);
     });
 
