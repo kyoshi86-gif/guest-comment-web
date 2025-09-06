@@ -241,10 +241,10 @@ if (exportBtn) {
     }
     const rows = [
       [
-        "Tanggal", "Jam", "No Meja", "Nama Tamu", "Asal",
-        "Media Source", "Media Other", "Event Type", "Service Other",
-        "Age Range", "Food Quality", "Beverage Quality", "Serving Speed",
-        "Service Rating", "Cleanliness", "Ambience", "Price Rating", "Comments",
+        "Tanggal", "Jam", "No Meja", "Nama", "Asal",
+        "Media Sosial", "Media Lainnya", "Acara", "Acara Lainnya",
+        "Usia", "Food Quality", "Beverage Quality", "Serving Speed",
+        "Service", "Cleanliness", "Ambience", "Price", "Comments",
       ],
       ...allData.map((row) => [
         formatDate(row.tgl), row.jam ?? "", row.no_meja ?? "",
