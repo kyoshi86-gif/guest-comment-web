@@ -1,364 +1,219 @@
-// data.js (final dengan localStorage + highlight rating 1/2)
-
-// --- Supabase Client ---
+// ====== KONFIGURASI SUPABASE ======
 const SUPABASE_URL = "https://drdflrzsvfakdnhqniaa.supabase.co";
-const SUPABASE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
 
-// DOM
-const tableBody = document.querySelector("#dataTable tbody");
-const selectAllCheckbox = document.getElementById("selectAll");
-const filterBtn = document.getElementById("filterBtn");
-const exportBtn = document.getElementById("exportBtn");
-const saveBtn = document.getElementById("saveBtn");
-const resetBtn = document.getElementById("resetBtn");
-const filterStartInput = document.getElementById("filterStart");
-const filterEndInput = document.getElementById("filterEnd");
+// client Supabase dari global window.supabase (CDN)
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let allData = [];
+// ====== ELEMEN DOM ======
+const form = document.getElementById('gcForm');
+const rowId = document.getElementById('row_id');
 
-// --- Global saved state (persist di localStorage) ---
-let savedState = loadSavedState();
+const mediaLainnyaRadio = document.getElementById('mediaLainnyaRadio');
+const eventLainnyaRadio = document.getElementById('eventLainnyaRadio');
+const mediaOtherInput   = document.getElementById('media_other');
+const eventOtherInput   = document.getElementById('event_other');
 
-function loadSavedState() {
-  try {
-    return JSON.parse(localStorage.getItem("savedState")) || {};
-  } catch (e) {
-    return {};
-  }
+const btnSave   = document.getElementById('btnSave');
+const btnUpdate = document.getElementById('btnUpdate');
+const btnDelete = document.getElementById('btnDelete');
+const btnCancel = document.getElementById('btnCancel');
+const btnClose  = document.getElementById('btnClose');
+const btnReport = document.getElementById('btnReport');
+
+const listBody  = document.getElementById('listBody');
+
+// ====== UTIL ======
+function val(id){ return document.getElementById(id).value.trim(); }
+function getRadio(name){
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+function setRadio(name, value){
+  const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
+  if (el) el.checked = true;
+}
+function setRequiredRadios(){
+  // minimal wajib: tanggal, jam, meja, nama
+  // rating tidak dipaksa semua, mengikuti kebiasaan form kertas
 }
 
-function persistSavedState() {
-  localStorage.setItem("savedState", JSON.stringify(savedState));
-}
-
-// --- Helper: format tanggal ---
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("id-ID", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-// --- Check tombol Simpan ---
-function checkSaveButtonVisibility() {
-  if (!allData || allData.length === 0) {
-    saveBtn.style.display = "none";
-    return;
-  }
-  const changed = allData.some(
-    (row) => Boolean(row._checked) !== Boolean(row._saved)
-  );
-  saveBtn.style.display = changed ? "inline-block" : "none";
-}
-
-// --- Render Table ---
-function renderTable(data) {
-  if (!tableBody) return;
-  tableBody.innerHTML = "";
-
-  // kolom yang harus dicek untuk highlight nilai 1/2
-  const highlightCols = [
-    "food_quality",
-    "beverage_quality",
-    "serving_speed",
-    "service_rating",
-    "cleanliness",
-    "ambience",
-    "price_rating",
-  ];
-
-  data.forEach((row, index) => {
-    const tr = document.createElement("tr");
-
-    // Checkbox
-    const tdCheck = document.createElement("td");
-    tdCheck.style.textAlign = "center";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.dataset.index = index;
-
-    checkbox.checked = row._checked;
-
-    if (row._saved) tr.classList.add("table-success");
-
-    checkbox.addEventListener("change", (e) => {
-      row._checked = e.target.checked;
-      if (e.target.checked) {
-        tr.classList.add("table-success");
-      } else {
-        if (!row._saved) tr.classList.remove("table-success");
-      }
-      checkSaveButtonVisibility();
+// Enable/disable input "lainnya"
+function setupOtherToggle(){
+  document.querySelectorAll('input[name="media_source"]').forEach(r=>{
+    r.addEventListener('change', ()=>{
+      const on = mediaLainnyaRadio && mediaLainnyaRadio.checked;
+      mediaOtherInput.disabled = !on;
+      if(!on) mediaOtherInput.value = "";
     });
-
-    tdCheck.appendChild(checkbox);
-    tr.appendChild(tdCheck);
-
-    // Kolom Data
-    const columns = [
-      "tgl","jam","no_meja","nama_tamu","asal",
-      "media_source","media_other","event_type",
-      "service_other","age_range","food_quality",
-      "beverage_quality","serving_speed","service_rating",
-      "cleanliness","ambience","price_rating","comments",
-    ];
-
-    columns.forEach((col) => {
-      const td = document.createElement("td");
-      td.style.whiteSpace = "normal";
-      td.style.textAlign = "center";
-
-      let value = row[col] ?? "";
-      if (col === "tgl" && row[col]) {
-        value = formatDate(row[col]);
-      }
-
-      td.textContent = value;
-
-      // highlight merah kalau nilainya 1 atau 2
-      if (highlightCols.includes(col)) {
-        if (String(value).trim() === "1" || String(value).trim() === "2") {
-          td.style.backgroundColor = "red";
-          td.style.color = "white";
-          td.style.fontWeight = "bold";
-        }
-      }
-
-      tr.appendChild(td);
+  });
+  document.querySelectorAll('input[name="event_type"]').forEach(r=>{
+    r.addEventListener('change', ()=>{
+      const on = eventLainnyaRadio && eventLainnyaRadio.checked;
+      eventOtherInput.disabled = !on;
+      if(!on) eventOtherInput.value = "";
     });
-
-    tableBody.appendChild(tr);
   });
-
-  updateSelectAllState();
-  checkSaveButtonVisibility();
 }
 
-function updateSelectAllState() {
-  if (!selectAllCheckbox || !tableBody) return;
-  const rows = Array.from(tableBody.querySelectorAll("input[type=checkbox]"));
-  if (rows.length === 0) {
-    selectAllCheckbox.checked = false;
-    selectAllCheckbox.indeterminate = false;
-    return;
+// Bersihkan form / reset state
+function clearForm(){
+  form.reset();
+  rowId.value = "";
+  mediaOtherInput.disabled = true;
+  eventOtherInput.disabled = true;
+  btnSave.disabled   = false;
+  btnUpdate.disabled = true;
+  btnDelete.disabled = true;
+}
+
+// Map form -> payload DB
+function formToPayload(){
+  const payload = {
+    tgl: val('tgl'),
+    jam: val('jam'),
+    no_meja: val('no_meja'),
+    nama_tamu: val('nama_tamu'),
+    asal: getRadio('asal'),
+    media_source: getRadio('media_source'),
+    media_other: mediaOtherInput.value.trim() || null,
+    event_type: getRadio('event_type'),
+    event_other: eventOtherInput.value.trim() || null,
+    age_range: getRadio('age_range'),
+    food_quality: parseInt(getRadio('food_quality')) || null,
+    beverage_quality: parseInt(getRadio('beverage_quality')) || null,
+    serving_speed: parseInt(getRadio('serving_speed')) || null,
+    service_rating: parseInt(getRadio('service_rating')) || null,
+    cleanliness: parseInt(getRadio('cleanliness')) || null,
+    ambience: parseInt(getRadio('ambience')) || null,
+    price_rating: parseInt(getRadio('price_rating')) || null,
+    comments: document.getElementById('comments').value.trim() || null,
+  };
+  return payload;
+}
+
+function validateMinimal(p){
+  if(!p.tgl || !p.jam || !p.no_meja || !p.nama_tamu){
+    alert("Mohon isi Tanggal, Jam, No Meja, dan Nama.");
+    return false;
   }
-  const checkedCount = rows.filter((c) => c.checked).length;
-  if (checkedCount === 0) {
-    selectAllCheckbox.checked = false;
-    selectAllCheckbox.indeterminate = false;
-  } else if (checkedCount === rows.length) {
-    selectAllCheckbox.checked = true;
-    selectAllCheckbox.indeterminate = false;
-  } else {
-    selectAllCheckbox.checked = false;
-    selectAllCheckbox.indeterminate = true;
-  }
+  return true;
 }
 
-// --- Fetch Data dari Supabase ---
-async function fetchData(startDate, endDate) {
-  let query = supabase.from("guest_comments").select("*");
+// ====== CRUD ======
+async function loadList(){
+  const { data, error } = await sb
+    .from('guest_comments')
+    .select('id,tgl,jam,no_meja,nama_tamu')
+    .order('tgl', { ascending: false })   // urutkan tanggal terbaru dulu
+    .order('jam', { ascending: false })   // kalau tanggal sama, urutkan jam
+    .limit(200);
 
-  if (startDate && endDate) {
-    query = query
-      .gte("tgl", startDate.toISOString())
-      .lte("tgl", endDate.toISOString());
-  } else {
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    query = query
-      .gte("tgl", firstDay.toISOString())
-      .lte("tgl", lastDay.toISOString());
-  }
+  if(error){ console.error("Load error:", error.message); return; }
 
-  query = query.order("tgl", { ascending: true });
-
-  const { data, error } = await query;
-  if (error) {
-    console.error("Load data error:", error);
-    alert("Gagal memuat data: " + (error.message || JSON.stringify(error)));
-    return;
-  }
-
-  // assign state baru: _checked selalu sama dengan _saved
-  const merged = (data || []).map((row) => {
-    row._saved = savedState[row.id] === true;
-    row._checked = row._saved; // biar tidak dianggap ada perubahan
-    return row;
-  });
-
-  allData = merged;
-  renderTable(allData);
-  checkSaveButtonVisibility();
-}
-
-// --- Event Filter ---
-if (filterBtn) {
-  filterBtn.addEventListener("click", () => {
-    const startVal = filterStartInput ? filterStartInput.value : "";
-    const endVal = filterEndInput ? filterEndInput.value : "";
-
-    if (startVal && endVal) {
-      fetchData(new Date(startVal), new Date(endVal));
-    } else {
-      fetchData();
-    }
-
-    if (filterStartInput) filterStartInput.value = "";
-    if (filterEndInput) filterEndInput.value = "";
+  listBody.innerHTML = "";
+  data.forEach((r, i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${r.tgl ?? ""}</td>
+      <td>${r.jam ?? ""}</td>
+      <td>${r.no_meja ?? ""}</td>
+      <td>${r.nama_tamu ?? ""}</td>`;
+    tr.addEventListener('click', ()=> selectRow(r.id));
+    listBody.appendChild(tr);
   });
 }
 
-// --- Event Select All ---
-if (selectAllCheckbox) {
-  selectAllCheckbox.addEventListener("change", (e) => {
-    const checked = e.target.checked;
-    allData.forEach((row, index) => {
-      row._checked = checked;
-      const tr = tableBody.children[index];
-      if (!tr) return;
-      const checkbox = tr.querySelector("input[type=checkbox]");
-      if (checkbox) checkbox.checked = checked;
-      if (checked) tr.classList.add("table-success");
-      else if (!row._saved) tr.classList.remove("table-success");
-    });
-    checkSaveButtonVisibility();
-  });
+async function selectRow(id){
+  const { data, error } = await sb
+    .from('guest_comments')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if(error){ alert("Gagal mengambil data: "+error.message); return; }
+
+  // isi form
+  rowId.value = data.id;
+  document.getElementById('tgl').value = data.tgl ?? "";
+  document.getElementById('jam').value = (data.jam ?? "").toString().substring(0,5);
+  document.getElementById('no_meja').value = data.no_meja ?? "";
+  document.getElementById('nama_tamu').value = data.nama_tamu ?? "";
+
+  setRadio('asal', data.asal);
+  setRadio('media_source', data.media_source);
+  setRadio('event_type',  data.event_type);
+  setRadio('age_range',   data.age_range);
+
+  if(data.media_source === 'Lainnya'){ mediaOtherInput.disabled=false; mediaOtherInput.value = data.media_other ?? ""; }
+  if(data.event_type  === 'Lainnya'){ eventOtherInput.disabled=false; eventOtherInput.value = data.event_other ?? ""; }
+
+  setRadio('food_quality',      data.food_quality);
+  setRadio('beverage_quality',  data.beverage_quality);
+  setRadio('serving_speed',     data.serving_speed);
+  setRadio('service_rating',    data.service_rating);
+  setRadio('cleanliness',       data.cleanliness);
+  setRadio('ambience',          data.ambience);
+  setRadio('price_rating',      data.price_rating);
+
+  document.getElementById('comments').value = data.comments ?? "";
+
+  btnSave.disabled   = true;
+  btnUpdate.disabled = false;
+  btnDelete.disabled = false;
 }
 
-// --- Export Excel ---
-if (exportBtn) {
-  exportBtn.addEventListener("click", () => {
-    if (typeof XLSX === "undefined") {
-      alert("Library XLSX tidak ditemukan.");
-      return;
-    }
-    const rows = [
-      [
-        "Tanggal", "Jam", "No Meja", "Nama", "Asal",
-        "Media Sosial", "Media Lainnya", "Acara", "Acara Lainnya",
-        "Usia", "Food Quality", "Beverage Quality", "Serving Speed",
-        "Service", "Cleanliness", "Ambience", "Price", "Comments",
-      ],
-      ...allData.map((row) => [
-        formatDate(row.tgl), row.jam ?? "", row.no_meja ?? "",
-        row.nama_tamu ?? "", row.asal ?? "", row.media_source ?? "",
-        row.media_other ?? "", row.event_type ?? "", row.service_other ?? "",
-        row.age_range ?? "", row.food_quality ?? "", row.beverage_quality ?? "",
-        row.serving_speed ?? "", row.service_rating ?? "", row.cleanliness ?? "",
-        row.ambience ?? "", row.price_rating ?? "", row.comments ?? "",
-      ]),
-    ];
+async function onSave(){
+  const payload = formToPayload();
+  if(!validateMinimal(payload)) return;
 
-    const worksheet = XLSX.utils.aoa_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Guest Comments");
-    XLSX.writeFile(workbook, "guest_comments.xlsx");
-  });
+  const { error } = await sb.from('guest_comments').insert([payload]);
+  if(error){ alert("Gagal simpan: "+error.message); return; }
+  alert("Data tersimpan.");
+  clearForm();
+  loadList();
 }
 
-// --- Event Save ---
-if (saveBtn) {
-  saveBtn.addEventListener("click", () => {
-    const rows = tableBody.querySelectorAll("tr");
-    allData.forEach((row, index) => {
-      const tr = rows[index];
-      if (!tr) return;
-      const checkbox = tr.querySelector("input[type=checkbox]");
-      const isChecked = checkbox ? checkbox.checked : Boolean(row._saved);
+async function onUpdate(){
+  const id = rowId.value;
+  if(!id){ alert("Pilih data pada tabel (kanan) untuk di-update."); return; }
+  const payload = formToPayload();
+  if(!validateMinimal(payload)) return;
 
-      row._checked = isChecked;
-      row._saved = isChecked;
-      savedState[row.id] = isChecked; // update global + persist
-      if (isChecked) tr.classList.add("table-success");
-      else tr.classList.remove("table-success");
-    });
-    persistSavedState();
-    updateSelectAllState();
-    checkSaveButtonVisibility();
-    alert("Perubahan disimpan.");
-  });
+  const { error } = await sb.from('guest_comments').update(payload).eq('id', id);
+  if(error){ alert("Gagal update: "+error.message); return; }
+  alert("Data berhasil diupdate.");
+  clearForm();
+  loadList();
 }
 
-// --- Event Reset ---
-if (resetBtn) {
-  resetBtn.addEventListener("click", () => {
-    if (filterStartInput) filterStartInput.value = "";
-    if (filterEndInput) filterEndInput.value = "";
-    fetchData();
-  });
+async function onDelete(){
+  const id = rowId.value;
+  if(!id){ alert("Pilih data pada tabel (kanan) untuk dihapus."); return; }
+  if(!confirm("Yakin hapus data ini?")) return;
+
+  const { error } = await sb.from('guest_comments').delete().eq('id', id);
+  if(error){ alert("Gagal hapus: "+error.message); return; }
+  alert("Data dihapus.");
+  clearForm();
+  loadList();
 }
 
-// --- Load awal bulan berjalan ---
-fetchData();
+// Tombol lain
+function onCancel(){ clearForm(); }
+function onClose(){ window.close(); /* mungkin tidak bekerja jika bukan pop-up */ }
+function onReport(){ window.open('report.html'); /* placeholder */ }
 
-const uploadInput = document.getElementById("uploadExcel");
-const uploadBtn = document.getElementById("uploadBtn");
+// ====== INIT ======
+document.addEventListener('DOMContentLoaded', ()=>{
+  setupOtherToggle();
+  loadList();
 
-if (uploadBtn) {
-  uploadBtn.addEventListener("click", async () => {
-    if (!uploadInput.files.length) {
-      alert("Pilih file Excel terlebih dahulu.");
-      return;
-    }
-
-    const file = uploadInput.files[0];
-    const reader = new FileReader();
-
-    reader.onload = async (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-
-      if (!jsonData.length) {
-        alert("File Excel kosong atau format tidak sesuai.");
-        return;
-      }
-
-      // Mapping Excel → Supabase
-      const mappedData = jsonData.map((row) => ({
-        tgl: row["Tanggal"] ? new Date(row["Tanggal"]).toISOString() : null,
-        jam: row["Jam"] || "",
-        no_meja: row["No Meja"] || "",
-        nama_tamu: row["Nama"] || "",
-        asal: row["Asal"] || "",
-        media_source: row["Media Sosial"] || "",
-        media_other: row["Media Lainnya"] || "",
-        event_type: row["Acara"] || "",
-        service_other: row["Acara Lainnya"] || "",
-        age_range: row["Usia"] || "",
-        food_quality: row["Food Quality"] || "",
-        beverage_quality: row["Beverage Quality"] || "",
-        serving_speed: row["Serving Speed"] || "",
-        service_rating: row["Service"] || "",
-        cleanliness: row["Cleanliness"] || "",
-        ambience: row["Ambience"] || "",
-        price_rating: row["Price"] || "",
-        comments: row["Comments"] || "",
-      }));
-
-      // Simpan ke Supabase
-      const { data, error } = await supabase
-        .from("guest_comments")
-        .insert(mappedData);
-
-      if (error) {
-        console.error("Upload error:", error);
-        alert("Gagal upload data: " + error.message);
-      } else {
-        alert("Upload berhasil! Data ditambahkan.");
-        fetchData(); // reload tabel
-      }
-    };
-
-    reader.readAsArrayBuffer(file);
-  });
-}
+  btnSave.addEventListener('click', onSave);
+  btnUpdate.addEventListener('click', onUpdate);
+  btnDelete.addEventListener('click', onDelete);
+  btnCancel.addEventListener('click', onCancel);
+  btnClose.addEventListener('click', onClose);
+  btnReport.addEventListener('click', onReport);
+});
