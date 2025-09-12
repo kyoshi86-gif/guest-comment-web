@@ -298,3 +298,76 @@ if (resetBtn) {
 // --- Load awal bulan berjalan ---
 fetchData();
 
+// --- Upload Excel ---
+const uploadInput = document.getElementById("uploadExcel");
+if (uploadInput) {
+  uploadInput.addEventListener("change", handleFileUpload);
+}
+
+async function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async function (event) {
+    try {
+      const data = new Uint8Array(event.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // Validasi header
+      const expectedHeader = [
+        "Tanggal","Jam","No Meja","Nama","Asal",
+        "Media Sosial","Media Lainnya","Acara","Acara Lainnya",
+        "Usia","Food Quality","Beverage Quality","Serving Speed",
+        "Service","Cleanliness","Ambience","Price","Comments"
+      ];
+
+      const headerRow = jsonData[0] || [];
+      const isValid = expectedHeader.every((col, i) => headerRow[i] === col);
+      if (!isValid) {
+        alert("Format header tidak sesuai.\nHarus urut:\n" + expectedHeader.join("\t"));
+        return;
+      }
+
+      // Convert rows -> Supabase format
+      const newRows = jsonData.slice(1).map(row => ({
+        tgl: row[0] ? new Date(row[0]) : null,
+        jam: row[1] ?? "",
+        no_meja: row[2] ?? "",
+        nama_tamu: row[3] ?? "",
+        asal: row[4] ?? "",
+        media_source: row[5] ?? "",
+        media_other: row[6] ?? "",
+        event_type: row[7] ?? "",
+        service_other: row[8] ?? "",
+        age_range: row[9] ?? "",
+        food_quality: row[10] ?? "",
+        beverage_quality: row[11] ?? "",
+        serving_speed: row[12] ?? "",
+        service_rating: row[13] ?? "",
+        cleanliness: row[14] ?? "",
+        ambience: row[15] ?? "",
+        price_rating: row[16] ?? "",
+        comments: row[17] ?? "",
+      }));
+
+      // Insert ke Supabase
+      const { error } = await supabase.from("guest_comments").insert(newRows);
+      if (error) {
+        console.error("Upload gagal:", error);
+        alert("Upload gagal: " + (error.message || JSON.stringify(error)));
+      } else {
+        alert("Upload berhasil!");
+        fetchData(); // reload data
+      }
+    } catch (err) {
+      console.error("Error parsing Excel:", err);
+      alert("Gagal membaca file Excel.");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
