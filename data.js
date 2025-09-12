@@ -297,3 +297,68 @@ if (resetBtn) {
 
 // --- Load awal bulan berjalan ---
 fetchData();
+
+const uploadInput = document.getElementById("uploadExcel");
+const uploadBtn = document.getElementById("uploadBtn");
+
+if (uploadBtn) {
+  uploadBtn.addEventListener("click", async () => {
+    if (!uploadInput.files.length) {
+      alert("Pilih file Excel terlebih dahulu.");
+      return;
+    }
+
+    const file = uploadInput.files[0];
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+      if (!jsonData.length) {
+        alert("File Excel kosong atau format tidak sesuai.");
+        return;
+      }
+
+      // Mapping Excel → Supabase
+      const mappedData = jsonData.map((row) => ({
+        tgl: row["Tanggal"] ? new Date(row["Tanggal"]).toISOString() : null,
+        jam: row["Jam"] || "",
+        no_meja: row["No Meja"] || "",
+        nama_tamu: row["Nama"] || "",
+        asal: row["Asal"] || "",
+        media_source: row["Media Sosial"] || "",
+        media_other: row["Media Lainnya"] || "",
+        event_type: row["Acara"] || "",
+        service_other: row["Acara Lainnya"] || "",
+        age_range: row["Usia"] || "",
+        food_quality: row["Food Quality"] || "",
+        beverage_quality: row["Beverage Quality"] || "",
+        serving_speed: row["Serving Speed"] || "",
+        service_rating: row["Service"] || "",
+        cleanliness: row["Cleanliness"] || "",
+        ambience: row["Ambience"] || "",
+        price_rating: row["Price"] || "",
+        comments: row["Comments"] || "",
+      }));
+
+      // Simpan ke Supabase
+      const { data, error } = await supabase
+        .from("guest_comments")
+        .insert(mappedData);
+
+      if (error) {
+        console.error("Upload error:", error);
+        alert("Gagal upload data: " + error.message);
+      } else {
+        alert("Upload berhasil! Data ditambahkan.");
+        fetchData(); // reload tabel
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  });
+}
