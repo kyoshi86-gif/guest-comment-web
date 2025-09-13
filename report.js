@@ -146,7 +146,7 @@ function setDefaultFilters() {
 
 async function loadTahun() {
   // coba ambil tahun unik dari view; fallback jika kosong isi 1 tahun
-  const { data, error } = await supabase.from("guest_comments").select("tahun").order("tahun", {ascending:false});
+  const { data, error } = await supabase.from("public.guest_comments").select("tahun").order("tahun", {ascending:false});
   if (error || !data) {
     console.warn("loadTahun: fallback karena error atau data kosong", error);
     const sel = document.getElementById("tahun");
@@ -184,12 +184,12 @@ async function loadReport() {
 
   if (startDate && endDate) {
     // ambil dari tabel asli, lalu agregasi manual
-    const res = await supabase.from("guest_comments").select("*").gte("tgl", startDate).lte("tgl", endDate);
+    const res = await supabase.from("public.guest_comments").select("*").gte("tgl", startDate).lte("tgl", endDate);
     if (res.error) { console.error("loadReport error:", res.error); alert("Gagal mengambil data berdasarkan tanggal!"); return; }
     data = aggregateManual(res.data);
   } else {
     // ambil dari view agregasi
-    let q = supabase.from("guest_comments").select("*");
+    let q = supabase.from("public.guest_comments").select("*");
     if (tahun) q = q.eq("tahun", tahun);
     if (bulan) q = q.eq("bulan", bulan);
     const res = await q;
