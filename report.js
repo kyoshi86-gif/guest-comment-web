@@ -189,7 +189,7 @@ async function loadReport() {
     data = aggregateManual(res.data);
   } else {
     // ambil dari view agregasi
-    let q = supabase.from("public.guest_comments").select("*");
+    let q = supabase.from("guest_comments").select("*");
     if (tahun) q = q.eq("tahun", tahun);
     if (bulan) q = q.eq("bulan", bulan);
     const res = await q;
