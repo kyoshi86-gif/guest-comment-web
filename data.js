@@ -103,7 +103,7 @@ function renderTable(data) {
     const columns = [
       "tgl","jam","no_meja","nama_tamu","asal",
       "media_source","media_other","event_type",
-      "service_other","age_range","food_quality",
+      "event_other","age_range","food_quality",
       "beverage_quality","serving_speed","service_rating",
       "cleanliness","ambience","price_rating","comments",
     ];
