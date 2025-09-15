@@ -201,7 +201,7 @@ if (saveBtn) {
   saveBtn.addEventListener("click", async () => {
     const rows = tableBody.querySelectorAll("tr");
 
-    // update state lokal
+    // update state lokal sebelum kirim
     allData.forEach((row, index) => {
       const tr = rows[index];
       if (!tr) return;
@@ -210,30 +210,32 @@ if (saveBtn) {
 
       row._checked = isChecked;
       row._saved = isChecked;
+      row.is_saved = isChecked; // <--- penting! sinkronkan dengan DB
     });
 
     // simpan ke Supabase
     const updates = allData.map((row) => ({
-  id: row.id,
-  is_saved: row.is_saved ?? false,
-}));
+      id: row.id,
+      is_saved: row.is_saved,
+    }));
 
-for (const u of updates) {
-  const { error } = await supabase
-    .from("guest_comments")
-    .update({ is_saved: u.is_saved })
-    .eq("id", u.id);
+    for (const u of updates) {
+      const { error } = await supabase
+        .from("guest_comments")
+        .update({ is_saved: u.is_saved })
+        .eq("id", u.id);
 
-  if (error) {
-    console.error("Gagal update:", error);
-  }
-}
+      if (error) {
+        console.error("Gagal update:", error);
+      }
+    }
 
-    renderTable(allData);
+    renderTable(allData);          // akan kasih warna hijau utk saved
     checkSaveButtonVisibility();
     alert("Perubahan disimpan ke database.");
   });
 }
+
 
 // --- Event Filter ---
 if (filterBtn) {
