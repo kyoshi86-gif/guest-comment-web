@@ -231,16 +231,10 @@ if (saveBtn) {
   });
 }
 
-// assign state baru: _checked selalu sama dengan _saved
-  const merged = (data || []).map((row) => {
-    row._saved = savedState[row.id] === true;
-    row._checked = row._saved; // biar tidak dianggap ada perubahan
-    return row;
-  });
-
-  allData = merged;
-  renderTable(allData);
-  checkSaveButtonVisibility();
+if (error) {
+  console.error("Gagal update:", error);
+} else {
+  console.log("Update sukses");
 }
 
 // --- Event Filter ---
