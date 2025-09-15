@@ -232,7 +232,7 @@ if (saveBtn) {
 
     renderTable(allData);          // akan kasih warna hijau utk saved
     checkSaveButtonVisibility();
-    alert("Perubahan disimpan ke database.");
+    alert("Perubahan disimpan");
   });
 }
 
