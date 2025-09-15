@@ -186,17 +186,51 @@ async function fetchData(startDate, endDate) {
     return;
   }
 
-  // assign state baru: _checked selalu sama dengan _saved
-  const merged = (data || []).map((row) => {
-    row._saved = savedState[row.id] === true;
-    row._checked = row._saved; // biar tidak dianggap ada perubahan
+  allData = (data || []).map((row) => {
+    row._saved = row.is_saved === true;   // baca dari DB
+    row._checked = row._saved;            // awalnya sama
     return row;
   });
 
-  allData = merged;
   renderTable(allData);
   checkSaveButtonVisibility();
 }
+
+// --- Event Save ---
+if (saveBtn) {
+  saveBtn.addEventListener("click", async () => {
+    const rows = tableBody.querySelectorAll("tr");
+
+    // update state lokal
+    allData.forEach((row, index) => {
+      const tr = rows[index];
+      if (!tr) return;
+      const checkbox = tr.querySelector("input[type=checkbox]");
+      const isChecked = checkbox ? checkbox.checked : Boolean(row._saved);
+
+      row._checked = isChecked;
+      row._saved = isChecked;
+    });
+
+    // simpan ke Supabase
+    const updates = allData.map((row) => ({
+      id: row.id,
+      is_saved: row._saved,
+    }));
+
+    const { error } = await supabase.from("guest_comments").upsert(updates, { onConflict: "id" });
+    if (error) {
+      console.error("Gagal update:", error);
+      alert("Gagal menyimpan ke database.");
+      return;
+    }
+
+    renderTable(allData);
+    checkSaveButtonVisibility();
+    alert("Perubahan disimpan ke database.");
+  });
+}
+
 
 // --- Event Filter ---
 if (filterBtn) {
