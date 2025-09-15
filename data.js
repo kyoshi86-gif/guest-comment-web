@@ -214,21 +214,19 @@ if (saveBtn) {
 
     // simpan ke Supabase
     const updates = allData.map((row) => ({
-      id: row.id,
-      is_saved: row._saved,
-    }));
+  id: row.id,
+  is_saved: row.is_saved ?? false,
+}));
 
-    const { error } = await supabase.from("guest_comments").upsert(updates, { onConflict: "id" });
-    if (error) {
-      console.error("Gagal update:", error);
-      alert("Gagal menyimpan ke database.");
-      return;
-    }
+for (const u of updates) {
+  const { error } = await supabase
+    .from("guest_comments")
+    .update({ is_saved: u.is_saved })
+    .eq("id", u.id);
 
-if (error) {
-  console.error("Gagal update:", error);
-} else {
-  console.log("Update sukses");
+  if (error) {
+    console.error("Gagal update:", error);
+  }
 }
 
     renderTable(allData);
