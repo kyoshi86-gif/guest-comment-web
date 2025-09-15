@@ -225,16 +225,16 @@ if (saveBtn) {
       return;
     }
 
-    renderTable(allData);
-    checkSaveButtonVisibility();
-    alert("Perubahan disimpan ke database.");
-  });
-}
-
 if (error) {
   console.error("Gagal update:", error);
 } else {
   console.log("Update sukses");
+}
+
+    renderTable(allData);
+    checkSaveButtonVisibility();
+    alert("Perubahan disimpan ke database.");
+  });
 }
 
 // --- Event Filter ---
