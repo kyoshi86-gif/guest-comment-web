@@ -168,8 +168,8 @@ async function onSave(){
   const payload = formToPayload();
   if(!validateMinimal(payload)) return;
 
-// jangan sertakan id
-  delete payload.id;
+ // pastikan id tidak dikirim saat insert
+  if ('id' in payload) delete payload.id;
 
   const { error } = await sb.from('guest_comments').insert([payload]);
   if(error){ alert("Gagal simpan: "+error.message); return; }
