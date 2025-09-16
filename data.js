@@ -232,7 +232,6 @@ if (saveBtn) {
 
     renderTable(allData);          // akan kasih warna hijau utk saved
     checkSaveButtonVisibility();
-    alert("Perubahan warna disimpan");
   });
 }
 
