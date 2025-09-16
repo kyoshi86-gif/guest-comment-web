@@ -2,7 +2,7 @@
 const SUPABASE_URL = "https://drdflrzsvfakdnhqniaa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
 
-// client Supabase dari global window.supabase (CDN)
+// client Supabase
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ====== ELEMEN DOM ======
@@ -30,12 +30,9 @@ function getRadio(name){
   return el ? el.value : null;
 }
 function setRadio(name, value){
+  if(!value) return;
   const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
   if (el) el.checked = true;
-}
-function setRequiredRadios(){
-  // minimal wajib: tanggal, jam, meja, nama
-  // rating tidak dipaksa semua, mengikuti kebiasaan form kertas
 }
 
 // Enable/disable input "lainnya"
@@ -69,17 +66,21 @@ function clearForm(){
 
 // Map form -> payload DB
 function formToPayload(){
-  const payload = {
+  return {
     tgl: val('tgl'),
     jam: val('jam'),
     no_meja: val('no_meja'),
     nama_tamu: val('nama_tamu'),
+
     asal: getRadio('asal'),
     media_source: getRadio('media_source'),
     media_other: mediaOtherInput.value.trim() || null,
+
     event_type: getRadio('event_type'),
     event_other: eventOtherInput.value.trim() || null,
+
     age_range: getRadio('age_range'),
+
     food_quality: parseInt(getRadio('food_quality')) || null,
     beverage_quality: parseInt(getRadio('beverage_quality')) || null,
     serving_speed: parseInt(getRadio('serving_speed')) || null,
@@ -87,11 +88,12 @@ function formToPayload(){
     cleanliness: parseInt(getRadio('cleanliness')) || null,
     ambience: parseInt(getRadio('ambience')) || null,
     price_rating: parseInt(getRadio('price_rating')) || null,
-    comments: document.getElementById('comments').value.trim() || null,
+
+    comments: document.getElementById('comments').value.trim() || null
   };
-  return payload;
 }
 
+// Validasi minimal & sesuai constraint
 function validateMinimal(p){
   if(!p.tgl || !p.jam || !p.no_meja || !p.nama_tamu){
     alert("Mohon isi Tanggal, Jam, No Meja, dan Nama.");
@@ -105,8 +107,8 @@ async function loadList(){
   const { data, error } = await sb
     .from('guest_comments')
     .select('id,tgl,jam,no_meja,nama_tamu')
-    .order('tgl', { ascending: false })   // urutkan tanggal terbaru dulu
-    .order('jam', { ascending: false })   // kalau tanggal sama, urutkan jam
+    .order('tgl', { ascending: false })
+    .order('jam', { ascending: false })
     .limit(200);
 
   if(error){ console.error("Load error:", error.message); return; }
@@ -168,11 +170,10 @@ async function onSave(){
   const payload = formToPayload();
   if(!validateMinimal(payload)) return;
 
- // pastikan id tidak dikirim saat insert
-  if ('id' in payload) delete payload.id;
-
+  // id tidak boleh dikirim, biarkan database generate otomatis
   const { error } = await sb.from('guest_comments').insert([payload]);
-  if(error){ alert("Gagal simpan: "+error.message); return; }
+  if(error){ alert("Gagal simpan: " + error.message); return; }
+
   alert("Data tersimpan.");
   clearForm();
   loadList();
@@ -185,7 +186,8 @@ async function onUpdate(){
   if(!validateMinimal(payload)) return;
 
   const { error } = await sb.from('guest_comments').update(payload).eq('id', id);
-  if(error){ alert("Gagal update: "+error.message); return; }
+  if(error){ alert("Gagal update: " + error.message); return; }
+
   alert("Data berhasil diupdate.");
   clearForm();
   loadList();
@@ -197,7 +199,8 @@ async function onDelete(){
   if(!confirm("Yakin hapus data ini?")) return;
 
   const { error } = await sb.from('guest_comments').delete().eq('id', id);
-  if(error){ alert("Gagal hapus: "+error.message); return; }
+  if(error){ alert("Gagal hapus: " + error.message); return; }
+
   alert("Data dihapus.");
   clearForm();
   loadList();
@@ -205,8 +208,8 @@ async function onDelete(){
 
 // Tombol lain
 function onCancel(){ clearForm(); }
-function onClose(){ window.close(); /* mungkin tidak bekerja jika bukan pop-up */ }
-function onReport(){ window.open('report.html'); /* placeholder */ }
+function onClose(){ window.close(); }
+function onReport(){ window.open('report.html'); }
 
 // ====== INIT ======
 document.addEventListener('DOMContentLoaded', ()=>{
