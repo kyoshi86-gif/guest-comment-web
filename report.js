@@ -375,7 +375,6 @@ function renderBar(canvasId, rating) {
       scales: {
         y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 }, grid: { display: true } },
         x: { grid: { display: false } }
-      }
     },
 	 // 👇 tambah ini supaya klik bar manapun akan tampil YTD
       onClick: (evt, elements) => {
