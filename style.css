@@ -309,3 +309,28 @@ textarea{
   padding: 10px;
   height: 300px !important;
 }
+
+/* Container untuk line charts */
+#lineChartsContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 20px;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Card tiap chart */
+.line-chart-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  height: 300px; /* tinggi konsisten */
+  display: flex;
+  flex-direction: column;
+}
+
+.line-chart-card canvas {
+  flex: 1;
+}
