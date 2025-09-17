@@ -30,7 +30,7 @@ body{
   overflow: hidden;
 }
 
-/* Supaya isi form dan tabel bisa discroll internal */
+/* Supaya isi form dan tabfel bisa discroll internal */
 .form-section, .rating-section, .table-section {
   background: #014421;
   border-radius: 8px;
@@ -280,4 +280,17 @@ textarea{
   margin-bottom: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.table-responsive {
+  max-height: 70vh; /* batasi tinggi tabel supaya bisa discroll */
+  overflow-y: auto;
+}
+
+/* freeze header */
+#dataTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;         /* pastikan di atas isi tabel */
+  background: #f8f9fa; /* warna latar biar tidak tembus isi */
 }
