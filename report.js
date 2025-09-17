@@ -447,30 +447,33 @@ function renderLineCharts(data) {
   chartConfigs.forEach(cfg => {
     destroyIfExists(cfg.id);
     const ctx = document.getElementById(cfg.id);
+	if (!ctx) {
+    console.warn("Canvas tidak ditemukan untuk:", cfg.id);
+    return;
+	}
 
     new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: data.months,
-        datasets: [{
-          label: cfg.label,
-          data: cfg.data,
-          borderColor: "#007bff",
-          backgroundColor: "rgba(0,123,255,0.2)",
-          tension: 0.3,
-          fill: true,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: true } },
-        scales: {
-          y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }
-        }
+    type: 'line',
+    data: {
+      labels: data.months,
+      datasets: [{
+        label: cfg.label,
+        data: cfg.data,
+        borderColor: "#007bff",
+        backgroundColor: "rgba(0,123,255,0.2)",
+        tension: 0.3,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: true } },
+      scales: {
+        y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }
       }
-    });
+    }
   });
-}
+});
