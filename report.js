@@ -375,7 +375,7 @@ function renderBar(canvasId, rating) {
       scales: {
         y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }
       },
-      onClick: () => { showYTD(); } // klik chart -> tampilkan YTD
+      onClick: () => { showYTD(); }; renderLineCharts() // klik chart -> tampilkan YTD
     },
     plugins: [barLabelPlugin]
   };
@@ -494,18 +494,3 @@ function renderLineCharts(data) {
   });
 }
 
-function showYTD() {
-  // contoh dummy, ini nanti ganti ambil dari Supabase atau API
-  const sampleData = {
-    months: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug"],
-    food_quality: [3,4,5,4,3,5,4,5],
-    beverage_quality: [2,3,3,4,5,4,3,4],
-    serving_speed: [4,3,4,5,4,4,3,5],
-    service: [5,4,5,4,5,5,4,5],
-    cleanliness: [3,4,4,5,5,4,4,5],
-    ambience: [4,4,5,5,4,5,4,5],
-    price: [3,3,4,4,5,4,4,5]
-  };
-
-  renderLineCharts(sampleData);
-}
