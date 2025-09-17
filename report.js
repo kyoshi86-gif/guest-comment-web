@@ -1,17 +1,13 @@
 // report.js
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-// Supabase config (jangan ubah kecuali perlu)
+// Supabase config (tidak usah ubah kecuali perlu)
 const supabaseUrl = "https://drdflrzsvfakdnhqniaa.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Constants
-const COLORS = [
-  "#4e79a7", "#f28e2b", "#e15759", "#76b7b2",
-  "#59a14f", "#edc949", "#af7aa1", "#ff9da7",
-  "#9c755f", "#bab0ac"
-];
+// Konstanta
+const COLORS = ["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f","#edc949","#af7aa1","#ff9da7","#9c755f","#bab0ac"];
 const MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 
 // ----------------- PLUGIN: OUTLABELS -----------------
@@ -20,58 +16,36 @@ const outlabelsPlugin = {
   afterDraw(chart) {
     if (chart.config.type !== 'pie' && chart.config.type !== 'doughnut') return;
     const ctx = chart.ctx;
-    const dataset = chart.data.datasets[0];
+    const dataset = chart.data.datasets[0] || {data:[]};
     const meta = chart.getDatasetMeta(0);
-    const total = dataset.data.reduce((s, v) => s + (v || 0), 0);
+    const total = (dataset.data || []).reduce((s, v) => s + (v || 0), 0);
     if (!meta || !meta.data) return;
-
     meta.data.forEach((arc, i) => {
-      const value = dataset.data[i] || 0;
+      const value = (dataset.data[i] || 0);
       if (value === 0) return;
-
-      const start = arc.startAngle;
-      const end = arc.endAngle;
-      const mid = (start + end) / 2;
-
-      const cx = arc.x;
-      const cy = arc.y;
-      const outer = arc.outerRadius || Math.min(chart.width, chart.height) / 2;
-
+      const start = arc.startAngle, end = arc.endAngle, mid = (start+end)/2;
+      const cx = arc.x, cy = arc.y;
+      const outer = arc.outerRadius || Math.min(chart.width, chart.height)/2;
       const lineStartX = cx + Math.cos(mid) * (outer * 0.9);
       const lineStartY = cy + Math.sin(mid) * (outer * 0.9);
-
       const lineEndX = cx + Math.cos(mid) * (outer + 18);
       const lineEndY = cy + Math.sin(mid) * (outer + 18);
-
       const isRight = Math.cos(mid) >= 0;
       const textX = lineEndX + (isRight ? 8 : -8);
       const textY = lineEndY + 4;
 
-      // leader line
       ctx.save();
-      ctx.strokeStyle = "#333";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(lineStartX, lineStartY);
-      ctx.lineTo(lineEndX, lineEndY);
-      ctx.stroke();
+      ctx.strokeStyle = "#333"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(lineStartX, lineStartY); ctx.lineTo(lineEndX, lineEndY); ctx.stroke();
 
-      ctx.fillStyle = "#333";
-      ctx.beginPath();
-      ctx.arc(lineEndX, lineEndY, 2.5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillStyle = "#333"; ctx.beginPath(); ctx.arc(lineEndX, lineEndY, 2.5, 0, Math.PI*2); ctx.fill();
 
-      // label text di 2 baris
       const label = chart.data.labels[i] ?? "Lainnya";
-      const percent = total ? ((value / total) * 100).toFixed(1) : "0.0";
+      const percent = total ? ((value/total)*100).toFixed(1) : "0.0";
 
-      ctx.font = "12px Arial";
-      ctx.fillStyle = "#111";
-      ctx.textAlign = isRight ? "left" : "right";
-
+      ctx.font = "12px Arial"; ctx.fillStyle = "#111"; ctx.textAlign = isRight ? "left" : "right";
       ctx.fillText(`${label} — ${value}`, textX, textY);
       ctx.fillText(`(${percent}%)`, textX, textY + 14);
-
       ctx.restore();
     });
   }
@@ -91,9 +65,7 @@ const barLabelPlugin = {
         const x = bar.x;
         const y = bar.y - 6;
         ctx.save();
-        ctx.fillStyle = '#111';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
+        ctx.fillStyle = '#111'; ctx.font = '12px Arial'; ctx.textAlign = 'center';
         ctx.fillText(Number(val).toFixed(2), x, y);
         ctx.restore();
       });
@@ -103,7 +75,7 @@ const barLabelPlugin = {
 
 // ----------------- GLOBALS -----------------
 let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
-let ytdData = []; // akan diisi saat showYTD dipanggil
+let ytdData = []; // akan terisi saat showYTD dipanggil
 
 // ----------------- HELPERS -----------------
 function destroyIfExists(canvasId) {
@@ -119,7 +91,7 @@ function objToArray(obj) {
 
 function groupCount(data, field, fieldCount) {
   const res = {};
-  data.forEach(row => {
+  (data||[]).forEach(row => {
     const k = row[field] || "Lainnya";
     res[k] = (res[k] || 0) + (row[fieldCount] || 0);
   });
@@ -128,25 +100,27 @@ function groupCount(data, field, fieldCount) {
 
 function countBy(rows, field) {
   const m = {};
-  rows.forEach(r => {
+  (rows||[]).forEach(r => {
     const k = r[field] || "Lainnya";
     m[k] = (m[k] || 0) + 1;
   });
   return m;
 }
 
-// Mengembalikan 12 nilai (Jan..Des) berupa number atau null (jika tidak ada data)
+// Ambil nilai rata-rata tiap bulan: kembalikan array 12 (Jan..Des) berisi number atau null
 function getMonthlyValues(rows, field) {
   const map = {}; // bulan -> {sum, count}
   (rows || []).forEach(r => {
     const b = Number(r.bulan);
     if (!b || b < 1 || b > 12) return;
-    const vRaw = r[field];
-    const v = (vRaw === null || vRaw === undefined || vRaw === "") ? null : Number(vRaw);
-    if (v === null || isNaN(v)) {
-      // jika null/do nothing but keep possible existing
+    const raw = r[field];
+    // jika nilai kosong/NULL di sumber → abaikan (tandai tidak ada)
+    if (raw === null || raw === undefined || raw === "") {
+      // jangan masukkan sebagai 0; ini dianggap 'tidak ada'
       return;
     }
+    const v = Number(raw);
+    if (isNaN(v)) return;
     if (!map[b]) map[b] = { sum: 0, count: 0 };
     map[b].sum += v;
     map[b].count += 1;
@@ -154,50 +128,34 @@ function getMonthlyValues(rows, field) {
 
   const arr = new Array(12).fill(null);
   for (let m = 1; m <= 12; m++) {
-    if (map[m]) arr[m - 1] = map[m].sum / map[m].count;
-    else arr[m - 1] = null;
+    if (map[m]) arr[m - 1] = map[m].sum / map[m].count; // rata-rata bulan m
+    else arr[m - 1] = null; // tidak ada data -> null => gap
   }
   return arr;
 }
 
-// ----------------- DATA LOADING & FILTERS -----------------
+// ----------------- LOAD TAHUN & FILTERS -----------------
 async function loadTahun() {
   try {
     const res = await supabase.from("v_feedback_report").select("tahun").order("tahun", { ascending: false });
     const sel = document.getElementById("tahun");
     sel.innerHTML = "";
     const currentYear = new Date().getFullYear();
-
-    if (res.error || !res.data || res.data.length === 0) {
-      // fallback: hanya current year
-      const opt = document.createElement("option");
-      opt.value = currentYear;
-      opt.textContent = currentYear;
-      sel.appendChild(opt);
+    if (!res || res.error || !res.data || res.data.length === 0) {
+      const opt = document.createElement("option"); opt.value = currentYear; opt.textContent = currentYear; sel.appendChild(opt);
       sel.value = currentYear;
       return;
     }
-
-    // dapatkan unique years (descending)
     const years = [...new Set(res.data.map(r => r.tahun))];
-    // pastikan currentYear ada di list (letakkan di depan jika belum ada)
     if (!years.includes(currentYear)) years.unshift(currentYear);
-
-    years.forEach(y => {
-      const opt = document.createElement("option");
-      opt.value = y;
-      opt.textContent = y;
-      sel.appendChild(opt);
-    });
-
-    // set default ke current year
+    years.forEach(y => { const opt = document.createElement("option"); opt.value = y; opt.textContent = y; sel.appendChild(opt); });
     sel.value = currentYear;
   } catch (err) {
     console.warn("loadTahun error:", err);
     const sel = document.getElementById("tahun");
-    const currentYear = new Date().getFullYear();
-    sel.innerHTML = `<option value="${currentYear}">${currentYear}</option>`;
-    sel.value = currentYear;
+    const cy = new Date().getFullYear();
+    sel.innerHTML = `<option value="${cy}">${cy}</option>`;
+    sel.value = cy;
   }
 }
 
@@ -205,52 +163,38 @@ function setDefaultFilters() {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
-
   const selT = document.getElementById("tahun");
   if (selT) {
-    // jika option tidak berisi currentYear, tambahkan
+    // pastikan currentYear ada
     const found = Array.from(selT.options).some(o => Number(o.value) === currentYear);
     if (!found) {
-      const o = document.createElement("option");
-      o.value = currentYear;
-      o.textContent = currentYear;
-      selT.insertBefore(o, selT.firstChild);
+      const o = document.createElement("option"); o.value = currentYear; o.textContent = currentYear; selT.insertBefore(o, selT.firstChild);
     }
     selT.value = currentYear;
   }
-
   const selB = document.getElementById("bulan");
-  if (selB) selB.value = currentMonth;
+  if (selB) selB.value = currentMonth; // set ke bulan berjalan
 }
 
 function toggleFilters(disable) {
-  const t = document.getElementById("tahun");
-  const b = document.getElementById("bulan");
-  if (t) t.disabled = disable;
-  if (b) b.disabled = disable;
+  const t = document.getElementById("tahun"); const b = document.getElementById("bulan");
+  if (t) t.disabled = disable; if (b) b.disabled = disable;
 }
 
 function handleDateChange() {
   const s = document.getElementById("startDate").value;
   const e = document.getElementById("endDate").value;
-  if (s && e && s > e) {
-    alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir!");
-    document.getElementById("endDate").value = "";
-    return;
-  }
+  if (s && e && s > e) { alert("Tanggal awal tidak boleh lebih besar dari tanggal akhir!"); document.getElementById("endDate").value = ""; return; }
   toggleFilters(Boolean(s || e));
 }
 
 function resetFilters() {
   setDefaultFilters();
-  const sd = document.getElementById("startDate");
-  const ed = document.getElementById("endDate");
-  if (sd) sd.value = "";
-  if (ed) ed.value = "";
-  toggleFilters(false);
-  loadReport();
+  const sd = document.getElementById("startDate"); const ed = document.getElementById("endDate");
+  if (sd) sd.value = ""; if (ed) ed.value = ""; toggleFilters(false); loadReport();
 }
 
+// ----------------- LOAD & AGGREGATE -----------------
 async function loadReport() {
   const tahun = document.getElementById("tahun").value;
   const bulan = document.getElementById("bulan").value;
@@ -280,25 +224,19 @@ async function loadReport() {
 function aggregateManual(rows) {
   if (!rows || rows.length === 0) return [];
   const avg = (field) => rows.reduce((s, r) => s + (Number(r[field]) || 0), 0) / rows.length;
-  return [
-    {
-      asal: null,
-      asal_count: countBy(rows, "asal"),
-      media_source: null,
-      media_count: countBy(rows, "media_source"),
-      event_type: null,
-      acara_count: countBy(rows, "event_type"),
-      age_range: null,
-      usia_count: countBy(rows, "age_range"),
-      avg_food_quality: avg("food_quality"),
-      avg_beverage_quality: avg("beverage_quality"),
-      avg_serving_speed: avg("serving_speed"),
-      avg_service: avg("service_rating"),
-      avg_cleanliness: avg("cleanliness"),
-      avg_ambience: avg("ambience"),
-      avg_price: avg("price_rating"),
-    }
-  ];
+  return [{
+    asal: null, asal_count: countBy(rows,"asal"),
+    media_source: null, media_count: countBy(rows,"media_source"),
+    event_type: null, acara_count: countBy(rows,"event_type"),
+    age_range: null, usia_count: countBy(rows,"age_range"),
+    avg_food_quality: avg("food_quality"),
+    avg_beverage_quality: avg("beverage_quality"),
+    avg_serving_speed: avg("serving_speed"),
+    avg_service: avg("service_rating"),
+    avg_cleanliness: avg("cleanliness"),
+    avg_ambience: avg("ambience"),
+    avg_price: avg("price_rating"),
+  }];
 }
 
 // ----------------- RENDER CHARTS -----------------
@@ -343,28 +281,19 @@ function renderPie(canvasId, title, dataset) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return null;
 
-  const labels = (dataset || []).map(d => d.label);
-  const values = (dataset || []).map(d => d.value);
+  const labels = (dataset||[]).map(d=>d.label);
+  const values = (dataset||[]).map(d=>d.value);
 
   const cfg = {
     type: 'pie',
     data: { labels, datasets: [{ data: values, backgroundColor: COLORS.slice(0, values.length) }] },
     options: {
       responsive: true, maintainAspectRatio: false,
-      layout: { padding: { top: 20, bottom: 40 }},
+      layout: { padding: { top:20, bottom:40 } },
       plugins: {
         legend: { display: false },
-        title: { display: false, text: title, padding: {top: 8, bottom: 8} },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => {
-              const v = ctx.raw;
-              const tot = values.reduce((s,x)=>s+(x||0),0);
-              const p = tot ? ((v/tot)*100).toFixed(1) : "0.0";
-              return `${ctx.label}: ${v} (${p}%)`;
-            }
-          }
-        }
+        title: { display: false, text: title },
+        tooltip: { callbacks: { label: (ctx) => { const v = ctx.raw; const tot = values.reduce((s,x)=>s+(x||0),0); const p = tot ? ((v/tot)*100).toFixed(1) : "0.0"; return `${ctx.label}: ${v} (${p}%)`; } } }
       }
     },
     plugins: [outlabelsPlugin]
@@ -391,25 +320,13 @@ function renderBar(canvasId, rating) {
 
   const cfg = {
     type: 'bar',
-    data: { labels, datasets: [{ label: 'Average', data: dataVals, backgroundColor: COLORS.slice(0, labels.length) }] },
+    data: { labels, datasets: [{ label:'Average', data: dataVals, backgroundColor: COLORS.slice(0, labels.length) }] },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: { padding: 20 },
-      plugins: {
-        legend: { display: false },
-        title: { display: false, text: 'Rating Rata-rata', padding: {top:8, bottom:8} },
-        tooltip: { enabled: true }
-      },
-      scales: {
-        y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } },
-        x: { grid: { display: false } }
-      },
-      onClick: (evt, elements) => {
-        if (elements && elements.length > 0) {
-          showYTD(); // buka YTD untuk tahun yang terpilih
-        }
-      }
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding:20 },
+      plugins: { legend:{display:false}, title:{display:false} },
+      scales: { y: { min: 0, max: 5, ticks: { stepSize: 1 } }, x: { grid: { display:false } } },
+      onClick: (evt, elements) => { if (elements && elements.length > 0) showYTD(); }
     },
     plugins: [barLabelPlugin]
   };
@@ -420,20 +337,9 @@ function renderBar(canvasId, rating) {
 // ----------------- SHOW YTD & LINE CHARTS -----------------
 async function showYTD() {
   const tahun = document.getElementById("tahun").value || new Date().getFullYear();
-
   try {
-    const res = await supabase
-      .from("v_feedback_report")
-      .select("*")
-      .eq("tahun", tahun)
-      .order("bulan", { ascending: true });
-
-    if (res.error) {
-      console.error("Gagal ambil data YTD:", res.error);
-      alert("Gagal mengambil data YTD. Cek console.");
-      return;
-    }
-
+    const res = await supabase.from("v_feedback_report").select("*").eq("tahun", tahun).order("bulan", { ascending: true });
+    if (res.error) { console.error("Gagal ambil data YTD:", res.error); alert("Gagal mengambil data YTD. Cek console."); return; }
     ytdData = res.data || [];
 
     // toggle view
@@ -465,6 +371,7 @@ function renderLineChart(canvasId, cfg) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
+  // Dapatkan 12 nilai (null bila tidak ada)
   const values = getMonthlyValues(ytdData, cfg.field);
 
   const cfgChart = {
@@ -475,11 +382,12 @@ function renderLineChart(canvasId, cfg) {
         label: cfg.label,
         data: values,
         borderColor: "#4e79a7",
-        backgroundColor: "rgba(78,121,167,0.18)",
-        fill: true,
-        tension: 0.3,
+        backgroundColor: "rgba(78,121,167,0.12)",
+        fill: false,      // <--- penting: jangan fill supaya tidak 'menjuntai' ke bawah
+        spanGaps: false,  // <--- penting: jangan sambung titik null -> akan putus
+        tension: 0.25,
         pointRadius: 3,
-        pointHoverRadius: 5,
+        pointHoverRadius: 5
       }]
     },
     options: {
@@ -487,15 +395,17 @@ function renderLineChart(canvasId, cfg) {
       maintainAspectRatio: false,
       elements: { line: { borderWidth: 2 } },
       plugins: { legend: { display: false }, title: { display: true, text: cfg.label } },
-      scales: { y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } } },
-      spanGaps: false // jangan sambung ketika ada null → garis putus
+      scales: {
+        y: { min: 0, max: 5, ticks: { stepSize: 1 } },
+        x: { grid: { display: false } }
+      }
     }
   };
 
   return new Chart(canvas, cfgChart);
 }
 
-// ----------------- DOM READY: pasang event listeners -----------------
+// ----------------- DOM READY: pasang listener & inisialisasi -----------------
 document.addEventListener("DOMContentLoaded", async () => {
   await loadTahun();
   setDefaultFilters();
