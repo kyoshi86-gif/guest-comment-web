@@ -375,7 +375,7 @@ function renderBar(canvasId, rating) {
       scales: {
         y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }
       },
-      onClick: () => { showYTD(); }; renderLineCharts() // klik chart -> tampilkan YTD
+      onClick: () => { showYTD(); } // klik chart -> tampilkan YTD
     },
     plugins: [barLabelPlugin]
   };
