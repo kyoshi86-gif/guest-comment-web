@@ -1,294 +1,296 @@
-/*───────────────────────────────────
-  1. Variabel & Reset
-───────────────────────────────────*/
-:root {
-  --green: #0b3a1d;
-  --gold: #b9915b;
-  --gold-dark: #9f7a41;
-  --input-bg: #f5e6cc;
-  --white: #ffffff;
-  --radius: 0.5rem;
-  --gap: 1rem;
-  --gap-sm: 0.5rem;
-  --font-size: 1rem;
+:root{
+  --green:#0b3a1d;      /* hijau gelap background */
+  --gold:#b9915b;       /* emas tombol/header */
+  --gold-dark:#9f7a41;
+  --input:#f5e6cc;      /* krem untuk field */
+  --white:#ffffff;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  font-size: var(--font-size);
-  scroll-behavior: smooth;
-}
-
-body {
-  background: var(--green);
-  color: var(--white);
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--green);
+  color:var(--white);
   font-family: Arial, Helvetica, sans-serif;
-  line-height: 1.5;
-  padding: var(--gap);
+  width: 97vw;
 }
 
-/*───────────────────────────────────
-  2. Grid Utama (mobile-first)
-───────────────────────────────────*/
-.gc-wrap {
+/* Container utama */
+.container {
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
   display: grid;
-  grid-template-areas:
-    "header"
-    "form"
-    "footer";
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr auto;
-  gap: var(--gap);
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: 1fr 1fr 0.6fr; /* kiri form, tengah rating, kanan tabel */
+  grid-template-rows: auto 1fr auto;   /* header, isi, footer tombol */
+  gap: 10px;
+  box-sizing: border-box;
+  padding: 10px;
+  overflow: hidden;
 }
 
-.gc-header {
-  grid-area: header;
-  background: var(--gold);
-  border-radius: var(--radius);
-  padding: var(--gap-sm);
-  text-align: center;
+/* Supaya isi form dan tabfel bisa discroll internal */
+.form-section, .rating-section, .table-section {
+  background: #014421;
+  border-radius: 8px;
+  padding: 10px;
+  overflow: auto;   /* kalau konten panjang, scroll hanya di dalam box */
+  box-sizing: border-box;
 }
 
-.gc-logo {
-  font-weight: 700;
-  letter-spacing: 0.2rem;
+.gc-wrap{padding:6px}
+
+.gc-header{
+  height:54px;
+  background:var(--gold);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:4px;
+  margin:6px 6px 10px;
+}
+.gc-logo{font-weight:700; letter-spacing:3px;}
+
+.gc-grid{
+  display:grid;
+  grid-template-columns: 40% 35% 25%;
+  gap:14px;
+  margin:0 6px;
 }
 
-.gc-footer {
-  grid-area: footer;
-  text-align: right;
-  font-size: 0.875rem;
-  opacity: 0.8;
+.gc-left,.gc-mid,.gc-right{
+  background:transparent;
 }
 
-/*───────────────────────────────────
-  3. Form & Rating & Daftar 
-───────────────────────────────────*/
-.gc-grid {
-  grid-area: form;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--gap);
+.gc-row3{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:10px;
 }
 
-/* field container */
-.gc-field {
-  margin-bottom: var(--gap-sm);
-}
-.gc-field label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 700;
-}
+.gc-field{margin:8px 0}
+.gc-field label{display:block; margin-bottom:4px; font-weight:700}
+
 input[type="text"],
 input[type="date"],
 input[type="time"],
-textarea {
-  width: 100%;
-  padding: var(--gap-sm);
-  border: none;
-  border-radius: var(--radius);
-  background: var(--input-bg);
-  color: #333;
-  font: inherit;
+textarea{
+  width:100%;
+  box-sizing:border-box;
+  padding:6px 8px;
+  border:none;
+  border-radius:3px;
+  background:var(--input);
+  color:#333;
 }
 
-/* fieldset & dua kolom di mobile */
-.gc-fieldset {
-  border: 1px solid var(--white);
-  border-radius: var(--radius);
-  padding: var(--gap-sm);
-  margin-bottom: var(--gap);
+.gc-fieldset{
+  border:1px solid var(--white);
+  border-radius:4px;
+  padding:10px;
+  margin:10px 0;
 }
-.gc-fieldset legend {
-  font-weight: 700;
+.gc-fieldset legend{font-weight:700}
+.gc-fieldset label{display:block; min-width:180px; margin:3px 6px 3px 0}
+
+.gc-other{
+  width:100%;
+  margin-top:8px;
 }
-.gc-two-col {
-  display: grid;
+
+.gc-two-col{
+  display:grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--gap-sm);
-}
-.gc-other {
-  margin-top: var(--gap-sm);
 }
 
-/* rating di mobile: ubah jadi list */
-.gc-rating {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: var(--gap);
+.gc-rating{
+  width:100%;
+  border-collapse:collapse;
+  margin-bottom:10px;
 }
-.gc-rating thead {
-  display: none;
-}
-.gc-rating tbody tr {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  padding: var(--gap-sm) 0;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-}
-.gc-rating td {
-  flex: 1 1 14%;
-  text-align: center;
-}
-.gc-rating td:first-child {
-  flex: 1 1 100%;
-  text-align: left;
-  font-weight: 700;
-  margin-bottom: var(--gap-sm);
+.gc-rating th,.gc-rating td{
+  border:1px solid var(--white);
+  padding:6px;
+  text-align:center;
 }
 
-/* tombol aksi */
-.gc-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-sm);
+.gc-buttons{
+  display:flex; 
+  gap:14px; 
+  flex-wrap:wrap; 
+  justify-content:flex-start;
+  margin-top:6px;
 }
-.gold {
+
+.gold{
+  background:var(--gold);
+  border:none;
+  color:#fff;
+  font-weight:700;
+  padding:8px 16px;
+  border-radius:4px;
+  cursor:pointer;
+}
+.gold:disabled{
+  opacity:.6; cursor:not-allowed;
+}
+.gold:hover:not(:disabled){
+  background:var(--gold-dark);
+}
+
+.gc-right{
+  background:#fff1;
+  border:1px solid #fff5;
+  border-radius:4px;
+  padding:6px;
+}
+.gc-list{
+  width:100%;
+  border-collapse:collapse;
+  background:transparent;
+}
+.gc-list th,.gc-list td{
+  border:1px solid var(--white);
+  padding:4px 6px;
+  text-align:left;
+}
+.gc-right{
+  max-height:600px;
+  overflow:auto
+}
+
+.gc-footer{
+  text-align:right;
+  margin:10px 10px 0;
+  opacity:.8;
+  font-size:12px;
+}
+
+.gc-close-wrap {
+  display: flex;
+  justify-content: flex-start; /* tombol di kiri */
+  margin-top: 10px;
+}
+.gc-close-wrap .gold {
   background: var(--gold);
-  color: var(--white);
-  padding: var(--gap-sm) var(--gap);
   border: none;
-  border-radius: var(--radius);
+  color: #fff;
   font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.2s;
 }
-.gold:hover:not(:disabled) {
+.gc-close-wrap .gold:hover {
   background: var(--gold-dark);
 }
-.gold:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 
-/* daftar entri di mobile: ubah jadi kartu */
-.gc-search {
-  width: 100%;
-  padding: var(--gap-sm);
-  margin-bottom: var(--gap-sm);
-  border: 1px solid #ccc;
-  border-radius: var(--radius);
-  color: #000;
-  font: inherit;
-}
-.gc-list {
-  width: 100%;
-  border-collapse: collapse;
-}
-.gc-list thead {
-  display: none;
-}
-.gc-list tbody tr {
-  display: block;
-  background: rgba(255,255,255,0.1);
-  border-radius: var(--radius);
-  padding: var(--gap-sm);
-  margin-bottom: var(--gap);
-}
-.gc-list td {
-  display: flex;
-  justify-content: space-between;
-  padding: var(--gap-sm) 0;
-  font-size: 0.9rem;
-}
-.gc-list td::before {
-  content: attr(data-label);
-  font-weight: 700;
-  margin-right: 0.5rem;
-}
-
-/*───────────────────────────────────
-  4. Tablet & Desktop
-───────────────────────────────────*/
-@media (min-width: 768px) {
-  .gc-grid {
-    grid-template-columns: 40% 35% 25%;
-  }
-  .gc-buttons {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-  .gc-buttons button {
-    flex: 1 1 auto;
-  }
-  .gc-list thead {
-    display: table-header-group;
-  }
-  .gc-list,
-  .gc-list th,
-  .gc-list td {
-    display: table;
-  }
-  .gc-list {
-    border-collapse: collapse;
-  }
-  .gc-list th,
-  .gc-list td {
-    border: 1px solid var(--white);
-    padding: 0.5rem;
-    text-align: left;
-  }
-  .gc-rating thead {
-    display: table-header-group;
-  }
-  .gc-rating,
-  .gc-rating th,
-  .gc-rating td {
-    display: table;
-    border: 1px solid var(--white);
-  }
-}
-
-/*───────────────────────────────────
-  5. Modal Laporan
-───────────────────────────────────*/
 .report-modal {
   position: fixed;
-  inset: 0;
+  top:0; left:0; right:0; bottom:0;
   background: rgba(0,0,0,0.7);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
 }
 .report-content {
   background: var(--white);
-  color: #333;
-  border-radius: var(--radius);
-  padding: var(--gap);
+  padding: 20px;
+  border-radius: 8px;
+  color:#333;
+  text-align:center;
   max-width: 500px;
   width: 90%;
+}
+
+.page.hidden {
+  display: none;
+}
+
+.report-container {
+  display: flex;
+  height: 100vh;
+  background: white;
+}
+
+.sidebar {
+  width: 200px;
+  background: #12491d; /* hijau tua */
+  color: white;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar label {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.sidebar select,
+.sidebar input {
+  padding: 3px;
+}
+
+.btn-proses {
+  background: red;
+  color: white;
+  padding: 5px;
+  border: none;
+  cursor: pointer;
+}
+.btn-reset, .btn-gray {
+  background: #ccc;
+  color: black;
+  padding: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.charts {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 15px;
+  padding: 10px;
+}
+
+.chart-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 5px;
   text-align: center;
 }
 
-/*────────────────────────────
-  BERI PADDING & BACKGROUND 
-  PADA TIAP GRID SECTION
-────────────────────────────*/
-.gc-left,
-.gc-mid {
-  outline: 3px dashed red !important;
-  padding: 2rem !important;
-  background-color: hotpink !important;
-}
-.gc-right {
-  background-color: rgba(1, 68, 33, 0.9); /* sama dengan #014421, tapi dikit transparan */
-  padding: var(--gap);                 /* beri ruang dalam */
-  border-radius: var(--radius);
+.chart-item h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
 }
 
-/* PERLEBAR JARAK VERTICAL DI MOBILE */
-.gc-grid {
-  gap: calc(var(--gap) * 1.5);         /* lebih lega di antar section */
+.gc-search {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff;   /* biar tidak tembus konten di belakang */
+  color: #000;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.table-responsive {
+  max-height: 70vh; /* batasi tinggi tabel supaya bisa discroll */
+  overflow-y: auto;
+}
+
+/* freeze header */
+#dataTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;         /* pastikan di atas isi tabel */
+  background: #f8f9fa; /* warna latar biar tidak tembus isi */
 }
