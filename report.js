@@ -391,6 +391,20 @@ function renderBar(canvasId, rating) {
 
 // ----------------- LINE CHART -----------------
 async function showYTD() {
+  const year = new Date().getFullYear();
+
+  // Ambil data dari Supabase
+  const { data, error } = await supabase
+    .from("v_feedback_report")
+    .select("*")
+    .eq("tahun", year)
+    .order("bulan", { ascending: true });
+
+  if (error) {
+    console.error("Gagal ambil data YTD:", error);
+    return;
+}
+  
   document.getElementById("mainCharts").style.display = "none";
   document.getElementById("ytdSection").style.display = "block";
   document.getElementById("lineChartsContainer").style.display = "grid";
@@ -400,6 +414,15 @@ async function showYTD() {
   ytdData = data || [];
 
   renderLineCharts();
+  
+  // Render 7 line chart
+  renderLineCharts("lineFood", ytdData, { label: "Food Quality", field: "avg_food_quality" });
+  renderLineCharts("lineBeverage", ytdData, { label: "Beverage Quality", field: "avg_beverage_quality" });
+  renderLineCharts("lineSpeed", ytdData, { label: "Serving Speed", field: "avg_serving_speed" });
+  renderLineCharts("lineService", ytdData, { label: "Service", field: "avg_service" });
+  renderLineCharts("lineCleanliness", ytdData, { label: "Cleanliness", field: "avg_cleanliness" });
+  renderLineCharts("lineAmbience", ytdData, { label: "Ambience", field: "avg_ambience" });
+  renderLineCharts("linePrice", ytdData, { label: "Price", field: "avg_price" });
 }
 
 function renderLineCharts() {
