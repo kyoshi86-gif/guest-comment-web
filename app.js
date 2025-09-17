@@ -170,6 +170,9 @@ async function onSave(){
   const payload = formToPayload();
   if(!validateMinimal(payload)) return;
 
+// Hapus field id kalau ada (supaya tidak bentrok)
+  delete payload.id;
+
   // id tidak boleh dikirim, biarkan database generate otomatis
   const { error } = await sb.from('guest_comments').insert([payload]);
   if(error){ alert("Gagal simpan: " + error.message); return; }
