@@ -20,6 +20,18 @@
       max-width: 450px;
       white-space: normal; /* supaya bisa wrap */
     }
+	
+	/* ==== Tambahan untuk header melayang ==== */
+	.table-responsive {
+	  max-height: 70vh;
+      overflow-y: auto;
+	}
+	#dataTable thead th {
+	  position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #f8f9fa;
+	}
   </style>
 </head>
 <body>
