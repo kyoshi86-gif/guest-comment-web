@@ -143,21 +143,32 @@ function renderCharts(data) {
 
 function renderPie(id, title, obj) {
   destroyIfExists(id);
-  if (!obj || Object.keys(obj).length === 0) return;
+
+  // fallback data kalau kosong
+  if (!obj || Object.keys(obj).length === 0) {
+    obj = { "No Data": 1 };
+  }
 
   const labels = Object.keys(obj);
   const values = Object.values(obj);
 
   return new Chart(document.getElementById(id), {
     type: "pie",
-    data: { labels, datasets:[{ data:values, backgroundColor:COLORS }] },
+    data: { 
+      labels, 
+      datasets:[{ data:values, backgroundColor:COLORS }] 
+    },
     options: { 
       responsive:true, 
-      plugins:{ legend:{ display:true, position:"bottom" } } 
+      plugins:{ 
+        legend:{ display:true, position:"bottom" },
+        title:{ display:true, text:title }
+      } 
     },
     plugins:[outlabelsPlugin]
   });
 }
+
 
 
 function renderBar(id, d) {
