@@ -277,7 +277,11 @@ textarea {
   PADA TIAP GRID SECTION
 ────────────────────────────*/
 .gc-left,
-.gc-mid,
+.gc-mid {
+  outline: 3px dashed red !important;
+  padding: 2rem !important;
+  background-color: hotpink !important;
+}
 .gc-right {
   background-color: rgba(1, 68, 33, 0.9); /* sama dengan #014421, tapi dikit transparan */
   padding: var(--gap);                 /* beri ruang dalam */
