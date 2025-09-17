@@ -384,12 +384,15 @@ function renderBar(canvasId, rating) {
 }
 
 async function showYTD() {
+  // sembunyikan chart utama
   document.getElementById("mainCharts").style.display = "none";
-  document.getElementById("ytdSection").style.display = "flex";
+  // tampilkan section YTD
+  document.getElementById("ytdSection").style.display = "block";
+  // tampilkan grid chart line
+  document.getElementById("lineChartsContainer").style.display = "grid";
 
   const tahun = document.getElementById("tahun").value;
 
-  // ambil data per bulan untuk tahun terpilih
   const { data, error } = await supabase
     .from("v_feedback_report")
     .select("*")
@@ -401,10 +404,11 @@ async function showYTD() {
     return;
   }
 
-  // siapkan dataset YTD (per kategori rating)
-  const bulanLabels = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  const bulanLabels = [
+    "Januari","Februari","Maret","April","Mei","Juni",
+    "Juli","Agustus","September","Oktober","November","Desember"
+  ];
 
-  // siapkan struktur data untuk 7 chart terpisah
   const chartData = {
     months: data.map(r => bulanLabels[r.bulan - 1]),
     food_quality: data.map(r => r.avg_food_quality || 0),
@@ -416,7 +420,6 @@ async function showYTD() {
     price: data.map(r => r.avg_price || 0)
   };
 
-  // render 7 line chart
   renderLineCharts(chartData);
 }
 
@@ -424,9 +427,11 @@ async function showYTD() {
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btnBack").addEventListener("click", () => {
     document.getElementById("ytdSection").style.display = "none";
+    document.getElementById("lineChartsContainer").style.display = "none";
     document.getElementById("mainCharts").style.display = "flex";
   });
 });
+
 
 function renderLineCharts(data) {
   const chartConfigs = [
