@@ -354,37 +354,37 @@ function renderBar(canvasId, rating) {
   ];
 
   const cfg = {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Average',
-        data: dataVals,
-        backgroundColor: COLORS.slice(0, labels.length)
-      }]
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Average',
+      data: dataVals,
+      backgroundColor: COLORS.slice(0, labels.length)
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: { padding: 20 },
+    plugins: {
+      legend: { display: false },
+      title: { display: false, text: 'Rating Rata-rata', padding: {top:8, bottom:8} },
+      tooltip: { enabled: true }
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-	  layout: { padding: 20 },
-      plugins: {
-        legend: { display: false },
-        title: { display: false, text: 'Rating Rata-rata', padding: {top:8, bottom:8} },
-        tooltip: { enabled: true }
-      },
-      scales: {
-        y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 }, grid: { display: true } },
-        x: { grid: { display: false } }
+    scales: {
+      y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } },
+      x: { grid: { display: false } }
     },
-	 // 👇 tambah ini supaya klik bar manapun akan tampil YTD
-      onClick: (evt, elements) => {
-        if (elements.length > 0) {
-          showYTD();
-        }
+    onClick: (evt, elements) => {
+      if (elements.length > 0) {
+        showYTD();
       }
-    },
-    plugins: [barLabelPlugin]
-  };
+    }
+  },
+  plugins: [barLabelPlugin]
+};
+
 
   return new Chart(canvas, cfg);
 }
