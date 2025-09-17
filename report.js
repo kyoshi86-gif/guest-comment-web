@@ -383,3 +383,114 @@ function renderBar(canvasId, rating) {
 
   return new Chart(canvas, cfg);
 }
+
+let ytdChart;
+
+// pasang event klik di barRating setelah render
+function renderBar(canvasId, rating) {
+  destroyIfExists(canvasId);
+  const canvas = document.getElementById(canvasId);
+
+  const labels = ["Food Quality","Beverage Quality","Serving Speed","Service","Cleanliness","Ambience","Price"];
+  const dataVals = [
+    rating.avg_food_quality || 0,
+    rating.avg_beverage_quality || 0,
+    rating.avg_serving_speed || 0,
+    rating.avg_service || 0,
+    rating.avg_cleanliness || 0,
+    rating.avg_ambience || 0,
+    rating.avg_price || 0,
+  ];
+
+  const cfg = {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Average',
+        data: dataVals,
+        backgroundColor: COLORS.slice(0, labels.length)
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: 20 },
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }
+      },
+      onClick: () => { showYTD(); } // klik chart -> tampilkan YTD
+    },
+    plugins: [barLabelPlugin]
+  };
+
+  return new Chart(canvas, cfg);
+}
+
+async function showYTD() {
+  document.getElementById("mainCharts").style.display = "none";
+  document.getElementById("ytdSection").style.display = "flex";
+
+  const tahun = document.getElementById("tahun").value;
+
+  // ambil data per bulan untuk tahun terpilih
+  const { data, error } = await supabase
+    .from("v_feedback_report")
+    .select("*")
+    .eq("tahun", tahun)
+    .order("bulan", { ascending: true });
+
+  if (error || !data) {
+    console.error(error);
+    return;
+  }
+
+  // siapkan dataset YTD (per kategori rating)
+  const bulanLabels = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+
+  const datasets = [
+    { key:"avg_food_quality", label:"Kualitas Makanan", color:"#4e79a7" },
+    { key:"avg_beverage_quality", label:"Kualitas Minuman", color:"#f28e2b" },
+    { key:"avg_serving_speed", label:"Kecepatan Penyajian", color:"#7f7f7f" },
+    { key:"avg_service", label:"Pelayanan", color:"#edc949" },
+    { key:"avg_cleanliness", label:"Kebersihan", color:"#1f77b4" },
+    { key:"avg_ambience", label:"Suasana", color:"#59a14f" },
+    { key:"avg_price", label:"Harga", color:"#af7aa1" },
+  ];
+
+  const ds = datasets.map(d => ({
+    label: d.label,
+    data: data.map(r => r[d.key] || 0),
+    borderColor: d.color,
+    backgroundColor: d.color,
+    tension: 0.3
+  }));
+
+  destroyIfExists("ytdChart");
+  ytdChart = new Chart(document.getElementById("ytdChart"), {
+    type: 'line',
+    data: {
+      labels: bulanLabels,
+      datasets: ds
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top' },
+      },
+      scales: {
+        y: { beginAtZero: true, max: 5, ticks:{ stepSize:1 } }
+      }
+    }
+  });
+}
+
+// tombol kembali
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("btnBack").addEventListener("click", () => {
+    document.getElementById("ytdSection").style.display = "none";
+    document.getElementById("mainCharts").style.display = "flex";
+  });
+});
