@@ -397,49 +397,27 @@ async function showYTD() {
     .order("bulan", { ascending: true });
 
   if (error || !data) {
-    console.error(error);
+    console.error("showYTD error:", error);
     return;
   }
 
   // siapkan dataset YTD (per kategori rating)
   const bulanLabels = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
-  const datasets = [
-    { key:"avg_food_quality", label:"Kualitas Makanan", color:"#4e79a7" },
-    { key:"avg_beverage_quality", label:"Kualitas Minuman", color:"#f28e2b" },
-    { key:"avg_serving_speed", label:"Kecepatan Penyajian", color:"#7f7f7f" },
-    { key:"avg_service", label:"Pelayanan", color:"#edc949" },
-    { key:"avg_cleanliness", label:"Kebersihan", color:"#1f77b4" },
-    { key:"avg_ambience", label:"Suasana", color:"#59a14f" },
-    { key:"avg_price", label:"Harga", color:"#af7aa1" },
-  ];
+  // siapkan struktur data untuk 7 chart terpisah
+  const chartData = {
+    months: data.map(r => bulanLabels[r.bulan - 1]),
+    food_quality: data.map(r => r.avg_food_quality || 0),
+    beverage_quality: data.map(r => r.avg_beverage_quality || 0),
+    serving_speed: data.map(r => r.avg_serving_speed || 0),
+    service: data.map(r => r.avg_service || 0),
+    cleanliness: data.map(r => r.avg_cleanliness || 0),
+    ambience: data.map(r => r.avg_ambience || 0),
+    price: data.map(r => r.avg_price || 0)
+  };
 
-  const ds = datasets.map(d => ({
-    label: d.label,
-    data: data.map(r => r[d.key] || 0),
-    borderColor: d.color,
-    backgroundColor: d.color,
-    tension: 0.3
-  }));
-
-  destroyIfExists("ytdChart");
-  ytdChart = new Chart(document.getElementById("ytdChart"), {
-    type: 'line',
-    data: {
-      labels: bulanLabels,
-      datasets: ds
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'top' },
-      },
-      scales: {
-        y: { beginAtZero: true, max: 5, ticks:{ stepSize:1 } }
-      }
-    }
-  });
+  // render 7 line chart
+  renderLineCharts(chartData);
 }
 
 // tombol kembali
@@ -451,16 +429,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function renderLineCharts(data) {
-  // contoh data: { months: ["Jan","Feb","Mar"], food_quality: [3,4,5], ... }
-
   const chartConfigs = [
-    { id: "chart_food", label: "Food Quality", data: data.food_quality },
-    { id: "chart_beverage", label: "Beverage Quality", data: data.beverage_quality },
-    { id: "chart_speed", label: "Serving Speed", data: data.serving_speed },
-    { id: "chart_service", label: "Service", data: data.service },
-    { id: "chart_cleanliness", label: "Cleanliness", data: data.cleanliness },
-    { id: "chart_ambience", label: "Ambience", data: data.ambience },
-    { id: "chart_price", label: "Price", data: data.price }
+    { id: "chart_food", label: "Food Quality", data: data.food_quality || [] },
+    { id: "chart_beverage", label: "Beverage Quality", data: data.beverage_quality || [] },
+    { id: "chart_speed", label: "Serving Speed", data: data.serving_speed || [] },
+    { id: "chart_service", label: "Service", data: data.service || [] },
+    { id: "chart_cleanliness", label: "Cleanliness", data: data.cleanliness || [] },
+    { id: "chart_ambience", label: "Ambience", data: data.ambience || [] },
+    { id: "chart_price", label: "Price", data: data.price || [] }
   ];
 
   chartConfigs.forEach(cfg => {
@@ -493,4 +469,3 @@ function renderLineCharts(data) {
     });
   });
 }
-
