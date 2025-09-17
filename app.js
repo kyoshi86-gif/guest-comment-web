@@ -112,7 +112,7 @@ async function loadList() {
     .select("id,tgl,jam,no_meja,nama_tamu")
     .order("tgl", { ascending: false })
     .order("jam", { ascending: false })
-    .limit(200);
+    .limit(500);
 
   if (error) {
     console.error("Load error:", error.message);
