@@ -149,6 +149,19 @@ function setupSearch(){
   });
 }
 
+  listBody.innerHTML = "";
+  data.forEach((r, i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${r.tgl ?? ""}</td>
+      <td>${r.jam ?? ""}</td>
+      <td>${r.no_meja ?? ""}</td>
+      <td>${r.nama_tamu ?? ""}</td>`;
+    tr.addEventListener('click', ()=> selectRow(r.id));
+    listBody.appendChild(tr);
+  });
+}
 
 async function selectRow(id){
   const { data, error } = await sb
