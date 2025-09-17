@@ -126,25 +126,39 @@ function renderCharts(data) {
   if (!data || !data.length) return;
 
   const d = data[0];
-  pieAsal = renderPie("pieAsal","Asal", d.asal_count);
-  pieMedia = renderPie("pieMedia","Media", d.media_count);
-  pieAcara = renderPie("pieAcara","Acara", d.acara_count);
-  pieUsia = renderPie("pieUsia","Usia", d.usia_count);
+
+  // parse JSON string jadi object
+  const asal = typeof d.asal_count === "string" ? JSON.parse(d.asal_count) : d.asal_count;
+  const media = typeof d.media_count === "string" ? JSON.parse(d.media_count) : d.media_count;
+  const acara = typeof d.acara_count === "string" ? JSON.parse(d.acara_count) : d.acara_count;
+  const usia = typeof d.usia_count === "string" ? JSON.parse(d.usia_count) : d.usia_count;
+
+  pieAsal = renderPie("pieAsal", "Asal", asal);
+  pieMedia = renderPie("pieMedia", "Media", media);
+  pieAcara = renderPie("pieAcara", "Acara", acara);
+  pieUsia = renderPie("pieUsia", "Usia", usia);
 
   barRating = renderBar("barRating", d);
 }
 
-function renderPie(id,title,obj) {
+function renderPie(id, title, obj) {
   destroyIfExists(id);
-  const labels = Object.keys(obj||{});
-  const values = Object.values(obj||{});
+  if (!obj || Object.keys(obj).length === 0) return;
+
+  const labels = Object.keys(obj);
+  const values = Object.values(obj);
+
   return new Chart(document.getElementById(id), {
-    type:"pie",
-    data:{ labels, datasets:[{ data:values, backgroundColor:COLORS }] },
-    options:{ responsive:true, plugins:{ legend:{display:false} } },
+    type: "pie",
+    data: { labels, datasets:[{ data:values, backgroundColor:COLORS }] },
+    options: { 
+      responsive:true, 
+      plugins:{ legend:{ display:true, position:"bottom" } } 
+    },
     plugins:[outlabelsPlugin]
   });
 }
+
 
 function renderBar(id, d) {
   destroyIfExists(id);
