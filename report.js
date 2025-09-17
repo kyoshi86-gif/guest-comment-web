@@ -1,7 +1,7 @@
 // report.js
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-// Supabase config
+// Supabase config (jangan ubah kecuali perlu)
 const supabaseUrl = "https://drdflrzsvfakdnhqniaa.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -69,10 +69,7 @@ const outlabelsPlugin = {
       ctx.fillStyle = "#111";
       ctx.textAlign = isRight ? "left" : "right";
 
-      // baris pertama: Label — value
       ctx.fillText(`${label} — ${value}`, textX, textY);
-
-      // baris kedua: (percent%)
       ctx.fillText(`(${percent}%)`, textX, textY + 14);
 
       ctx.restore();
@@ -106,7 +103,7 @@ const barLabelPlugin = {
 
 // ----------------- GLOBALS -----------------
 let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
-let ytdData = []; // penting: deklarasi global agar bisa diakses renderLineChart
+let ytdData = []; // akan diisi saat showYTD dipanggil
 
 // ----------------- HELPERS -----------------
 function destroyIfExists(canvasId) {
@@ -138,59 +135,99 @@ function countBy(rows, field) {
   return m;
 }
 
-function getMonthlyValues(data, field) {
-  // kembalikan array 12 item sesuai bulan (1..12), nilai number atau null jika tidak ada
-  const arr = new Array(12).fill(null);
-  (data || []).forEach(row => {
-    const b = Number(row.bulan);
-    if (!isNaN(b) && b >= 1 && b <= 12) {
-      const v = row[field];
-      arr[b - 1] = v == null ? null : Number(v);
+// Mengembalikan 12 nilai (Jan..Des) berupa number atau null (jika tidak ada data)
+function getMonthlyValues(rows, field) {
+  const map = {}; // bulan -> {sum, count}
+  (rows || []).forEach(r => {
+    const b = Number(r.bulan);
+    if (!b || b < 1 || b > 12) return;
+    const vRaw = r[field];
+    const v = (vRaw === null || vRaw === undefined || vRaw === "") ? null : Number(vRaw);
+    if (v === null || isNaN(v)) {
+      // jika null/do nothing but keep possible existing
+      return;
     }
+    if (!map[b]) map[b] = { sum: 0, count: 0 };
+    map[b].sum += v;
+    map[b].count += 1;
   });
+
+  const arr = new Array(12).fill(null);
+  for (let m = 1; m <= 12; m++) {
+    if (map[m]) arr[m - 1] = map[m].sum / map[m].count;
+    else arr[m - 1] = null;
+  }
   return arr;
 }
 
-// ----------------- DATA LOADING & AGGREGATION -----------------
+// ----------------- DATA LOADING & FILTERS -----------------
 async function loadTahun() {
-  // ambil tahun unik dari view; fallback ke tahun sekarang
   try {
     const res = await supabase.from("v_feedback_report").select("tahun").order("tahun", { ascending: false });
-    if (res.error || !res.data) {
-      const sel = document.getElementById("tahun");
-      sel.innerHTML = `<option value="${new Date().getFullYear()}">${new Date().getFullYear()}</option>`;
-      return;
-    }
-    const years = [...new Set(res.data.map(r => r.tahun))];
     const sel = document.getElementById("tahun");
     sel.innerHTML = "";
+    const currentYear = new Date().getFullYear();
+
+    if (res.error || !res.data || res.data.length === 0) {
+      // fallback: hanya current year
+      const opt = document.createElement("option");
+      opt.value = currentYear;
+      opt.textContent = currentYear;
+      sel.appendChild(opt);
+      sel.value = currentYear;
+      return;
+    }
+
+    // dapatkan unique years (descending)
+    const years = [...new Set(res.data.map(r => r.tahun))];
+    // pastikan currentYear ada di list (letakkan di depan jika belum ada)
+    if (!years.includes(currentYear)) years.unshift(currentYear);
+
     years.forEach(y => {
       const opt = document.createElement("option");
       opt.value = y;
       opt.textContent = y;
       sel.appendChild(opt);
     });
-    if (years.length) sel.value = years[0];
+
+    // set default ke current year
+    sel.value = currentYear;
   } catch (err) {
     console.warn("loadTahun error:", err);
     const sel = document.getElementById("tahun");
-    sel.innerHTML = `<option value="${new Date().getFullYear()}">${new Date().getFullYear()}</option>`;
+    const currentYear = new Date().getFullYear();
+    sel.innerHTML = `<option value="${currentYear}">${currentYear}</option>`;
+    sel.value = currentYear;
   }
 }
 
 function setDefaultFilters() {
   const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+
   const selT = document.getElementById("tahun");
-  if (selT && selT.options.length === 0) {
-    selT.innerHTML = `<option value="${now.getFullYear()}">${now.getFullYear()}</option>`;
+  if (selT) {
+    // jika option tidak berisi currentYear, tambahkan
+    const found = Array.from(selT.options).some(o => Number(o.value) === currentYear);
+    if (!found) {
+      const o = document.createElement("option");
+      o.value = currentYear;
+      o.textContent = currentYear;
+      selT.insertBefore(o, selT.firstChild);
+    }
+    selT.value = currentYear;
   }
-  document.getElementById("tahun").value = document.getElementById("tahun").value || now.getFullYear();
-  document.getElementById("bulan").value = document.getElementById("bulan").value || (now.getMonth() + 1);
+
+  const selB = document.getElementById("bulan");
+  if (selB) selB.value = currentMonth;
 }
 
 function toggleFilters(disable) {
-  document.getElementById("tahun").disabled = disable;
-  document.getElementById("bulan").disabled = disable;
+  const t = document.getElementById("tahun");
+  const b = document.getElementById("bulan");
+  if (t) t.disabled = disable;
+  if (b) b.disabled = disable;
 }
 
 function handleDateChange() {
@@ -206,8 +243,10 @@ function handleDateChange() {
 
 function resetFilters() {
   setDefaultFilters();
-  document.getElementById("startDate").value = "";
-  document.getElementById("endDate").value = "";
+  const sd = document.getElementById("startDate");
+  const ed = document.getElementById("endDate");
+  if (sd) sd.value = "";
+  if (ed) ed.value = "";
   toggleFilters(false);
   loadReport();
 }
@@ -218,8 +257,8 @@ async function loadReport() {
   const startDate = document.getElementById("startDate").value;
   const endDate = document.getElementById("endDate").value;
 
-  let out = [];
   try {
+    let out = [];
     if (startDate && endDate) {
       const res = await supabase.from("guest_comments").select("*").gte("tgl", startDate).lte("tgl", endDate);
       if (res.error) { console.error("loadReport error:", res.error); alert("Gagal mengambil data berdasarkan tanggal!"); return; }
@@ -309,16 +348,9 @@ function renderPie(canvasId, title, dataset) {
 
   const cfg = {
     type: 'pie',
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        backgroundColor: COLORS.slice(0, values.length)
-      }]
-    },
+    data: { labels, datasets: [{ data: values, backgroundColor: COLORS.slice(0, values.length) }] },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       layout: { padding: { top: 20, bottom: 40 }},
       plugins: {
         legend: { display: false },
@@ -348,25 +380,18 @@ function renderBar(canvasId, rating) {
 
   const labels = ["Food Quality","Beverage Quality","Serving Speed","Service","Cleanliness","Ambience","Price"];
   const dataVals = [
-    rating.avg_food_quality || 0,
-    rating.avg_beverage_quality || 0,
-    rating.avg_serving_speed || 0,
-    rating.avg_service || 0,
-    rating.avg_cleanliness || 0,
-    rating.avg_ambience || 0,
-    rating.avg_price || 0,
+    rating.avg_food_quality ?? 0,
+    rating.avg_beverage_quality ?? 0,
+    rating.avg_serving_speed ?? 0,
+    rating.avg_service ?? 0,
+    rating.avg_cleanliness ?? 0,
+    rating.avg_ambience ?? 0,
+    rating.avg_price ?? 0,
   ];
 
   const cfg = {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Average',
-        data: dataVals,
-        backgroundColor: COLORS.slice(0, labels.length)
-      }]
-    },
+    data: { labels, datasets: [{ label: 'Average', data: dataVals, backgroundColor: COLORS.slice(0, labels.length) }] },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -382,8 +407,7 @@ function renderBar(canvasId, rating) {
       },
       onClick: (evt, elements) => {
         if (elements && elements.length > 0) {
-          // tampilkan YTD untuk tahun yang dipilih di filter
-          showYTD();
+          showYTD(); // buka YTD untuk tahun yang terpilih
         }
       }
     },
@@ -463,10 +487,8 @@ function renderLineChart(canvasId, cfg) {
       maintainAspectRatio: false,
       elements: { line: { borderWidth: 2 } },
       plugins: { legend: { display: false }, title: { display: true, text: cfg.label } },
-      scales: {
-        y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }
-      },
-      spanGaps: false // putuskan garis saat bulan data null
+      scales: { y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } } },
+      spanGaps: false // jangan sambung ketika ada null → garis putus
     }
   };
 
