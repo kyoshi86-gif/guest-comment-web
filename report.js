@@ -383,3 +383,44 @@ function renderBar(canvasId, rating) {
 
   return new Chart(canvas, cfg);
 }
+// ----------------- LINE CHART -----------------
+async function showYTD() {
+  document.getElementById("mainCharts").style.display = "none";
+  document.getElementById("ytdSection").style.display = "block";
+  document.getElementById("lineChartsContainer").style.display = "grid";
+
+  const tahun = document.getElementById("tahun").value;
+  const { data } = await supabase.from("v_feedback_report").select("*").eq("tahun",tahun).order("bulan");
+  ytdData = data || [];
+
+  renderLineCharts();
+}
+
+function renderLineCharts() {
+  const charts = [
+    {id:"chart_food",field:"avg_food_quality",label:"Food Quality"},
+    {id:"chart_beverage",field:"avg_beverage_quality",label:"Beverage"},
+    {id:"chart_speed",field:"avg_serving_speed",label:"Speed"},
+    {id:"chart_service",field:"avg_service",label:"Service"},
+    {id:"chart_cleanliness",field:"avg_cleanliness",label:"Cleanliness"},
+    {id:"chart_ambience",field:"avg_ambience",label:"Ambience"},
+    {id:"chart_price",field:"avg_price",label:"Price"}
+  ];
+  charts.forEach(cfg=>{
+    destroyIfExists(cfg.id);
+    new Chart(document.getElementById(cfg.id), {
+      type:"line",
+      data:{
+        labels:["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"],
+        datasets:[{
+          label:cfg.label,
+          data: ytdData.map(r=>r[cfg.field]||0),
+          borderColor:"#4e79a7",
+          backgroundColor:"rgba(78,121,167,0.2)",
+          fill:true, tension:0.3
+        }]
+      },
+      options:{ responsive:true, scales:{y:{max:5,beginAtZero:true}}, plugins:{legend:{display:false},title:{display:true,text:cfg.label}} }
+    });
+  });
+}
