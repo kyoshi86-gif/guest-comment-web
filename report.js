@@ -449,3 +449,63 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("mainCharts").style.display = "flex";
   });
 });
+
+function renderLineCharts(data) {
+  // contoh data: { months: ["Jan","Feb","Mar"], food_quality: [3,4,5], ... }
+
+  const chartConfigs = [
+    { id: "chart_food", label: "Food Quality", data: data.food_quality },
+    { id: "chart_beverage", label: "Beverage Quality", data: data.beverage_quality },
+    { id: "chart_speed", label: "Serving Speed", data: data.serving_speed },
+    { id: "chart_service", label: "Service", data: data.service },
+    { id: "chart_cleanliness", label: "Cleanliness", data: data.cleanliness },
+    { id: "chart_ambience", label: "Ambience", data: data.ambience },
+    { id: "chart_price", label: "Price", data: data.price }
+  ];
+
+  chartConfigs.forEach(cfg => {
+    destroyIfExists(cfg.id);
+    const ctx = document.getElementById(cfg.id);
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.months,
+        datasets: [{
+          label: cfg.label,
+          data: cfg.data,
+          borderColor: "#007bff",
+          backgroundColor: "rgba(0,123,255,0.2)",
+          tension: 0.3,
+          fill: true,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true } },
+        scales: {
+          y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }
+        }
+      }
+    });
+  });
+}
+
+function showYTD() {
+  // contoh dummy, ini nanti ganti ambil dari Supabase atau API
+  const sampleData = {
+    months: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug"],
+    food_quality: [3,4,5,4,3,5,4,5],
+    beverage_quality: [2,3,3,4,5,4,3,4],
+    serving_speed: [4,3,4,5,4,4,3,5],
+    service: [5,4,5,4,5,5,4,5],
+    cleanliness: [3,4,4,5,5,4,4,5],
+    ambience: [4,4,5,5,4,5,4,5],
+    price: [3,3,4,4,5,4,4,5]
+  };
+
+  renderLineCharts(sampleData);
+}
