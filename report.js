@@ -453,28 +453,58 @@ function renderLineCharts(data) {
 	}
 
     new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: data.months,
-      datasets: [{
-        label: cfg.label,
-        data: cfg.data,
-        borderColor: "#007bff",
-        backgroundColor: "rgba(0,123,255,0.2)",
-        tension: 0.3,
-        fill: true,
-        pointRadius: 4,
-        pointHoverRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: true } },
-      scales: {
-        y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }
+  type: "line",
+  data: {
+    labels: [
+      "Jan","Feb","Mar","Apr","Mei","Jun",
+      "Jul","Agu","Sep","Okt","Nov","Des"
+    ],
+    datasets: [{
+      label: cfg.label,
+      data: groupByMonthAverage(ytdData, cfg.field),
+      borderColor: "#4e79a7",
+      backgroundColor: "rgba(78,121,167,0.2)",
+      fill: true,
+      tension: 0.3,
+      pointRadius: 4,
+      pointBackgroundColor: "#76b7b2"
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 5,
+        ticks: { stepSize: 1 }
       }
+    },
+    plugins: {
+      legend: { display: false },
+      title: { display: true, text: cfg.label }
     }
-  });
+  }
 });
+}
+
+// Utility untuk hitung rata-rata per bulan
+function groupByMonthAverage(data, field) {
+  const monthly = {};
+
+  data.forEach(r => {
+    const bulan = r.bulan; // pastikan field "bulan" sudah angka 1-12
+    if (!monthly[bulan]) monthly[bulan] = { total: 0, count: 0 };
+    monthly[bulan].total += Number(r[field] || 0);
+    monthly[bulan].count += 1;
+  });
+
+  // urutkan dari 1–12, lalu hitung rata-rata
+  return Array.from({ length: 12 }, (_, i) => {
+    const m = i + 1;
+    if (monthly[m]) {
+      return monthly[m].total / monthly[m].count;
+    }
+    return null; // kalau tidak ada data bulan tsb
+  });
 }
