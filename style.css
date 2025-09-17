@@ -155,7 +155,11 @@ textarea{
   padding:4px 6px;
   text-align:left;
 }
-.gc-right{max-height:600px; overflow:auto}
+.gc-right{
+  max-height:600px;
+  overflow:auto
+  position: relative;
+}
 
 .gc-footer{
   text-align:right;
@@ -268,7 +272,11 @@ textarea{
 }
 
 .gc-search {
-  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff;   /* biar tidak tembus konten di belakang */
+  color: #000;
   padding: 6px 10px;
   margin-bottom: 8px;
   border: 1px solid #ccc;
