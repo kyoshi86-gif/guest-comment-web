@@ -339,51 +339,6 @@ function renderPie(canvasId, title, dataset) {
 }
 
 // renderBar dengan plugin barLabelPlugin
-function renderBar(canvasId, rating) {
-  destroyIfExists(canvasId);
-  const canvas = document.getElementById(canvasId);
-
-  const labels = ["Food Quality","Beverage Quality","Serving Speed","Service","Cleanliness","Ambience","Price"];
-  const dataVals = [
-    rating.avg_food_quality || 0,
-    rating.avg_beverage_quality || 0,
-    rating.avg_serving_speed || 0,
-    rating.avg_service || 0,
-    rating.avg_cleanliness || 0,
-    rating.avg_ambience || 0,
-    rating.avg_price || 0,
-  ];
-
-  const cfg = {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Average',
-        data: dataVals,
-        backgroundColor: COLORS.slice(0, labels.length)
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-	  layout: { padding: 20 },
-      plugins: {
-        legend: { display: false },
-        title: { display: false, text: 'Rating Rata-rata', padding: {top:8, bottom:8} },
-        tooltip: { enabled: true }
-      },
-      scales: {
-        y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 }, grid: { display: true } },
-        x: { grid: { display: false } }
-      }
-    },
-    plugins: [barLabelPlugin]
-  };
-
-  return new Chart(canvas, cfg);
-}
-
 let ytdChart;
 
 // pasang event klik di barRating setelah render
