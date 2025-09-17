@@ -2,100 +2,101 @@
 const SUPABASE_URL = "https://drdflrzsvfakdnhqniaa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
 
-// client Supabase
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ====== ELEMEN DOM ======
-const form = document.getElementById('gcForm');
-const rowId = document.getElementById('row_id');
+const form = document.getElementById("gcForm");
+const rowId = document.getElementById("row_id");
 
-const mediaLainnyaRadio = document.getElementById('mediaLainnyaRadio');
-const eventLainnyaRadio = document.getElementById('eventLainnyaRadio');
-const mediaOtherInput   = document.getElementById('media_other');
-const eventOtherInput   = document.getElementById('event_other');
+const mediaLainnyaRadio = document.getElementById("mediaLainnyaRadio");
+const eventLainnyaRadio = document.getElementById("eventLainnyaRadio");
+const mediaOtherInput = document.getElementById("media_other");
+const eventOtherInput = document.getElementById("event_other");
 
-const btnSave   = document.getElementById('btnSave');
-const btnUpdate = document.getElementById('btnUpdate');
-const btnDelete = document.getElementById('btnDelete');
-const btnCancel = document.getElementById('btnCancel');
-const btnClose  = document.getElementById('btnClose');
-const btnReport = document.getElementById('btnReport');
+const btnSave = document.getElementById("btnSave");
+const btnUpdate = document.getElementById("btnUpdate");
+const btnDelete = document.getElementById("btnDelete");
+const btnCancel = document.getElementById("btnCancel");
+const btnClose = document.getElementById("btnClose");
+const btnReport = document.getElementById("btnReport");
 
-const listBody  = document.getElementById('listBody');
+const listBody = document.getElementById("listBody");
 
 // ====== UTIL ======
-function val(id){ return document.getElementById(id).value.trim(); }
-function getRadio(name){
+function val(id) {
+  return document.getElementById(id).value.trim();
+}
+function getRadio(name) {
   const el = document.querySelector(`input[name="${name}"]:checked`);
   return el ? el.value : null;
 }
-function setRadio(name, value){
-  if(!value) return;
+function setRadio(name, value) {
+  if (!value) return;
   const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
   if (el) el.checked = true;
 }
 
 // Enable/disable input "lainnya"
-function setupOtherToggle(){
-  document.querySelectorAll('input[name="media_source"]').forEach(r=>{
-    r.addEventListener('change', ()=>{
+function setupOtherToggle() {
+  document.querySelectorAll('input[name="media_source"]').forEach((r) => {
+    r.addEventListener("change", () => {
       const on = mediaLainnyaRadio && mediaLainnyaRadio.checked;
       mediaOtherInput.disabled = !on;
-      if(!on) mediaOtherInput.value = "";
+      if (!on) mediaOtherInput.value = "";
     });
   });
-  document.querySelectorAll('input[name="event_type"]').forEach(r=>{
-    r.addEventListener('change', ()=>{
+  document.querySelectorAll('input[name="event_type"]').forEach((r) => {
+    r.addEventListener("change", () => {
       const on = eventLainnyaRadio && eventLainnyaRadio.checked;
       eventOtherInput.disabled = !on;
-      if(!on) eventOtherInput.value = "";
+      if (!on) eventOtherInput.value = "";
     });
   });
 }
 
-// Bersihkan form / reset state
-function clearForm(){
+// Bersihkan form
+function clearForm() {
   form.reset();
   rowId.value = "";
   mediaOtherInput.disabled = true;
   eventOtherInput.disabled = true;
-  btnSave.disabled   = false;
+  btnSave.disabled = false;
   btnUpdate.disabled = true;
   btnDelete.disabled = true;
 }
 
-// Map form -> payload DB
-function formToPayload(){
+// Map form -> payload
+function formToPayload() {
   return {
-    tgl: val('tgl'),
-    jam: val('jam'),
-    no_meja: val('no_meja'),
-    nama_tamu: val('nama_tamu'),
+    tgl: val("tgl"),
+    jam: val("jam"),
+    no_meja: val("no_meja"),
+    nama_tamu: val("nama_tamu"),
 
-    asal: getRadio('asal'),
-    media_source: getRadio('media_source'),
+    asal: getRadio("asal"),
+    media_source: getRadio("media_source"),
     media_other: mediaOtherInput.value.trim() || null,
 
-    event_type: getRadio('event_type'),
+    event_type: getRadio("event_type"),
     event_other: eventOtherInput.value.trim() || null,
 
-    age_range: getRadio('age_range'),
-	
-    food_quality: parseInt(getRadio('food_quality')) || null,
-    beverage_quality: parseInt(getRadio('beverage_quality')) || null,
-    serving_speed: parseInt(getRadio('serving_speed')) || null,
-    service_rating: parseInt(getRadio('service_rating')) || null,
-    cleanliness: parseInt(getRadio('cleanliness')) || null,
-    ambience: parseInt(getRadio('ambience')) || null,
-    price_rating: parseInt(getRadio('price_rating')) || null,
+    age_range: getRadio("age_range"),
 
-    comments: document.getElementById('comments').value.trim() || null
+    food_quality: parseInt(getRadio("food_quality")) || null,
+    beverage_quality: parseInt(getRadio("beverage_quality")) || null,
+    serving_speed: parseInt(getRadio("serving_speed")) || null,
+    service_rating: parseInt(getRadio("service_rating")) || null,
+    cleanliness: parseInt(getRadio("cleanliness")) || null,
+    ambience: parseInt(getRadio("ambience")) || null,
+    price_rating: parseInt(getRadio("price_rating")) || null,
+
+    comments: document.getElementById("comments").value.trim() || null,
   };
 }
 
-// Validasi minimal & sesuai constraint
-function validateMinimal(p){
-  if(!p.tgl || !p.jam || !p.no_meja || !p.nama_tamu){
+// Validasi minimal
+function validateMinimal(p) {
+  if (!p.tgl || !p.jam || !p.no_meja || !p.nama_tamu) {
     alert("Mohon isi Tanggal, Jam, No Meja, dan Nama.");
     return false;
   }
@@ -103,142 +104,152 @@ function validateMinimal(p){
 }
 
 // ====== CRUD ======
-let allData = []; // simpan semua data dari Supabase
+let allData = [];
 
-async function loadList(){
+async function loadList() {
   const { data, error } = await sb
-    .from('guest_comments')
-    .select('id,tgl,jam,no_meja,nama_tamu')
-    .order('tgl', { ascending: false })
-    .order('jam', { ascending: false })
+    .from("guest_comments")
+    .select("id,tgl,jam,no_meja,nama_tamu")
+    .order("tgl", { ascending: false })
+    .order("jam", { ascending: false })
     .limit(200);
 
-  if(error){ console.error("Load error:", error.message); return; }
+  if (error) {
+    console.error("Load error:", error.message);
+    return;
+  }
 
   allData = data || [];
   renderList(allData);
+}
 
-// fungsi render dengan optional filter
-function renderList(rows){
+function renderList(rows) {
   listBody.innerHTML = "";
-  rows.forEach((r, i)=>{
-    const tr = document.createElement('tr');
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${i+1}</td>
+      <td>${i + 1}</td>
       <td>${r.tgl ?? ""}</td>
       <td>${r.jam ?? ""}</td>
       <td>${r.no_meja ?? ""}</td>
       <td>${r.nama_tamu ?? ""}</td>`;
-    tr.addEventListener('click', ()=> selectRow(r.id));
+    tr.addEventListener("click", () => selectRow(r.id));
     listBody.appendChild(tr);
   });
 }
 
-// fungsi filter pencarian
-function setupSearch(){
-  const searchBox = document.getElementById('searchBox');
-  if(!searchBox) return;
-  searchBox.addEventListener('input', ()=>{
+function setupSearch() {
+  const searchBox = document.getElementById("searchBox");
+  if (!searchBox) return;
+  searchBox.addEventListener("input", () => {
     const q = searchBox.value.toLowerCase();
-    const filtered = allData.filter(r=>
-      (r.nama_tamu ?? "").toLowerCase().includes(q) ||
-      (r.no_meja ?? "").toLowerCase().includes(q) ||
-      (r.tgl ?? "").toLowerCase().includes(q)
+    const filtered = allData.filter(
+      (r) =>
+        (r.nama_tamu ?? "").toLowerCase().includes(q) ||
+        (r.no_meja ?? "").toLowerCase().includes(q) ||
+        (r.tgl ?? "").toLowerCase().includes(q)
     );
     renderList(filtered);
   });
 }
 
-  listBody.innerHTML = "";
-  data.forEach((r, i)=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${i+1}</td>
-      <td>${r.tgl ?? ""}</td>
-      <td>${r.jam ?? ""}</td>
-      <td>${r.no_meja ?? ""}</td>
-      <td>${r.nama_tamu ?? ""}</td>`;
-    tr.addEventListener('click', ()=> selectRow(r.id));
-    listBody.appendChild(tr);
-  });
-}
-
-async function selectRow(id){
+async function selectRow(id) {
   const { data, error } = await sb
-    .from('guest_comments')
-    .select('*')
-    .eq('id', id)
+    .from("guest_comments")
+    .select("*")
+    .eq("id", id)
     .single();
 
-  if(error){ alert("Gagal mengambil data: "+error.message); return; }
+  if (error) {
+    alert("Gagal mengambil data: " + error.message);
+    return;
+  }
 
-  // isi form
   rowId.value = data.id;
-  document.getElementById('tgl').value = data.tgl ?? "";
-  document.getElementById('jam').value = (data.jam ?? "").toString().substring(0,5);
-  document.getElementById('no_meja').value = data.no_meja ?? "";
-  document.getElementById('nama_tamu').value = data.nama_tamu ?? "";
+  document.getElementById("tgl").value = data.tgl ?? "";
+  document.getElementById("jam").value = (data.jam ?? "").toString().substring(0, 5);
+  document.getElementById("no_meja").value = data.no_meja ?? "";
+  document.getElementById("nama_tamu").value = data.nama_tamu ?? "";
 
-  setRadio('asal', data.asal);
-  setRadio('media_source', data.media_source);
-  setRadio('event_type',  data.event_type);
-  setRadio('age_range',   data.age_range);
+  setRadio("asal", data.asal);
+  setRadio("media_source", data.media_source);
+  setRadio("event_type", data.event_type);
+  setRadio("age_range", data.age_range);
 
-  if(data.media_source === 'Lainnya'){ mediaOtherInput.disabled=false; mediaOtherInput.value = data.media_other ?? ""; }
-  if(data.event_type  === 'Lainnya'){ eventOtherInput.disabled=false; eventOtherInput.value = data.event_other ?? ""; }
+  if (data.media_source === "Lainnya") {
+    mediaOtherInput.disabled = false;
+    mediaOtherInput.value = data.media_other ?? "";
+  }
+  if (data.event_type === "Lainnya") {
+    eventOtherInput.disabled = false;
+    eventOtherInput.value = data.event_other ?? "";
+  }
 
-  setRadio('food_quality',      data.food_quality);
-  setRadio('beverage_quality',  data.beverage_quality);
-  setRadio('serving_speed',     data.serving_speed);
-  setRadio('service_rating',    data.service_rating);
-  setRadio('cleanliness',       data.cleanliness);
-  setRadio('ambience',          data.ambience);
-  setRadio('price_rating',      data.price_rating);
+  setRadio("food_quality", data.food_quality);
+  setRadio("beverage_quality", data.beverage_quality);
+  setRadio("serving_speed", data.serving_speed);
+  setRadio("service_rating", data.service_rating);
+  setRadio("cleanliness", data.cleanliness);
+  setRadio("ambience", data.ambience);
+  setRadio("price_rating", data.price_rating);
 
-  document.getElementById('comments').value = data.comments ?? "";
+  document.getElementById("comments").value = data.comments ?? "";
 
-  btnSave.disabled   = true;
+  btnSave.disabled = true;
   btnUpdate.disabled = false;
   btnDelete.disabled = false;
 }
 
-async function onSave(){
+async function onSave() {
   const payload = formToPayload();
-  if(!validateMinimal(payload)) return;
+  if (!validateMinimal(payload)) return;
 
-// Hapus field id kalau ada (supaya tidak bentrok)
   delete payload.id;
 
-  // id tidak boleh dikirim, biarkan database generate otomatis
-  const { error } = await sb.from('guest_comments').insert([payload]);
-  if(error){ alert("Gagal simpan: " + error.message); return; }
+  const { error } = await sb.from("guest_comments").insert([payload]);
+  if (error) {
+    alert("Gagal simpan: " + error.message);
+    return;
+  }
 
   alert("Data tersimpan.");
   clearForm();
   loadList();
 }
 
-async function onUpdate(){
+async function onUpdate() {
   const id = rowId.value;
-  if(!id){ alert("Pilih data pada tabel (kanan) untuk di-update."); return; }
+  if (!id) {
+    alert("Pilih data pada tabel (kanan) untuk di-update.");
+    return;
+  }
   const payload = formToPayload();
-  if(!validateMinimal(payload)) return;
+  if (!validateMinimal(payload)) return;
 
-  const { error } = await sb.from('guest_comments').update(payload).eq('id', id);
-  if(error){ alert("Gagal update: " + error.message); return; }
+  const { error } = await sb.from("guest_comments").update(payload).eq("id", id);
+  if (error) {
+    alert("Gagal update: " + error.message);
+    return;
+  }
 
   alert("Data berhasil diupdate.");
   clearForm();
   loadList();
 }
 
-async function onDelete(){
+async function onDelete() {
   const id = rowId.value;
-  if(!id){ alert("Pilih data pada tabel (kanan) untuk dihapus."); return; }
-  if(!confirm("Yakin hapus data ini?")) return;
+  if (!id) {
+    alert("Pilih data pada tabel (kanan) untuk dihapus.");
+    return;
+  }
+  if (!confirm("Yakin hapus data ini?")) return;
 
-  const { error } = await sb.from('guest_comments').delete().eq('id', id);
-  if(error){ alert("Gagal hapus: " + error.message); return; }
+  const { error } = await sb.from("guest_comments").delete().eq("id", id);
+  if (error) {
+    alert("Gagal hapus: " + error.message);
+    return;
+  }
 
   alert("Data dihapus.");
   clearForm();
@@ -246,20 +257,26 @@ async function onDelete(){
 }
 
 // Tombol lain
-function onCancel(){ clearForm(); }
-function onClose(){ window.close(); }
-function onReport(){ window.open('report.html'); }
+function onCancel() {
+  clearForm();
+}
+function onClose() {
+  window.close();
+}
+function onReport() {
+  window.open("report.html");
+}
 
 // ====== INIT ======
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener("DOMContentLoaded", () => {
   setupOtherToggle();
   loadList();
   setupSearch();
 
-  btnSave.addEventListener('click', onSave);
-  btnUpdate.addEventListener('click', onUpdate);
-  btnDelete.addEventListener('click', onDelete);
-  btnCancel.addEventListener('click', onCancel);
-  btnClose.addEventListener('click', onClose);
-  btnReport.addEventListener('click', onReport);
+  btnSave.addEventListener("click", onSave);
+  btnUpdate.addEventListener("click", onUpdate);
+  btnDelete.addEventListener("click", onDelete);
+  btnCancel.addEventListener("click", onCancel);
+  btnClose.addEventListener("click", onClose);
+  btnReport.addEventListener("click", onReport);
 });
