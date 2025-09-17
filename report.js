@@ -486,6 +486,7 @@ function renderLineCharts(data) {
     }
   }
 });
+  }
 
 // Utility untuk hitung rata-rata per bulan
 function groupByMonthAverage(data, field) {
