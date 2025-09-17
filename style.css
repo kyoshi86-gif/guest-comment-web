@@ -1,15 +1,18 @@
+/*───────────────────────────────────
+  1. Variabel & Reset
+───────────────────────────────────*/
 :root {
   --green: #0b3a1d;
   --gold: #b9915b;
   --gold-dark: #9f7a41;
-  --input: #f5e6cc;
+  --input-bg: #f5e6cc;
   --white: #ffffff;
-  --font-base: 1rem;
-  --spacing: 1rem;
   --radius: 0.5rem;
+  --gap: 1rem;
+  --gap-sm: 0.5rem;
+  --font-size: 1rem;
 }
 
-/* Reset dan box-sizing */
 *,
 *::before,
 *::after {
@@ -18,22 +21,22 @@
   padding: 0;
 }
 
-/* Dasar tipografi dan skala */
 html {
-  font-size: var(--font-base);
+  font-size: var(--font-size);
   scroll-behavior: smooth;
 }
 
 body {
-  min-height: 100vh;
-  background-color: var(--green);
+  background: var(--green);
   color: var(--white);
-  font-family: system-ui, Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   line-height: 1.5;
-  padding: var(--spacing);
+  padding: var(--gap);
 }
 
-/* Container utama */
+/*───────────────────────────────────
+  2. Grid Utama (mobile-first)
+───────────────────────────────────*/
 .gc-wrap {
   display: grid;
   grid-template-areas:
@@ -42,20 +45,17 @@ body {
     "footer";
   grid-template-columns: 1fr;
   grid-template-rows: auto 1fr auto;
-  gap: var(--spacing);
+  gap: var(--gap);
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* Header */
 .gc-header {
   grid-area: header;
-  background-color: var(--gold);
+  background: var(--gold);
   border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(var(--spacing) / 2);
+  padding: var(--gap-sm);
+  text-align: center;
 }
 
 .gc-logo {
@@ -63,126 +63,6 @@ body {
   letter-spacing: 0.2rem;
 }
 
-/* Form grid (mobile: satu kolom) */
-.gc-grid {
-  grid-area: form;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing);
-}
-
-/* Fieldset dan input dasar */
-.gc-field,
-.gc-fieldset {
-  background-color: transparent;
-}
-
-.gc-field {
-  margin-bottom: calc(var(--spacing) / 2);
-}
-
-.gc-field label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 700;
-}
-
-input[type="text"],
-input[type="date"],
-input[type="time"],
-textarea {
-  width: 100%;
-  padding: 0.5rem;
-  border: none;
-  border-radius: var(--radius);
-  background-color: var(--input);
-  color: #333;
-  font: inherit;
-}
-
-.gc-fieldset {
-  border: 1px solid var(--white);
-  border-radius: var(--radius);
-  padding: 0.75rem;
-}
-
-.gc-fieldset legend {
-  font-weight: 700;
-}
-
-.gc-two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-}
-
-.gc-other {
-  margin-top: 0.5rem;
-}
-
-/* Rating table */
-.gc-rating {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: var(--spacing);
-}
-
-.gc-rating th,
-.gc-rating td {
-  border: 1px solid var(--white);
-  padding: 0.5rem;
-  text-align: center;
-}
-
-/* Tombol aksi */
-.gc-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.gold {
-  background-color: var(--gold);
-  color: var(--white);
-  font-weight: 700;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.gold:hover:not(:disabled) {
-  background-color: var(--gold-dark);
-}
-
-.gold:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Daftar tamu */
-.gc-right {
-  grid-area: sidebar;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius);
-  padding: 0.5rem;
-  max-height: 60vh;
-  overflow: auto;
-}
-
-.gc-search {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: var(--radius);
-  background-color: var(--input);
-  color: #000;
-}
-
-/* Footer */
 .gc-footer {
   grid-area: footer;
   text-align: right;
@@ -190,49 +70,204 @@ textarea {
   opacity: 0.8;
 }
 
-/* Modal Laporan */
+/*───────────────────────────────────
+  3. Form & Rating & Daftar 
+───────────────────────────────────*/
+.gc-grid {
+  grid-area: form;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap);
+}
+
+/* field container */
+.gc-field {
+  margin-bottom: var(--gap-sm);
+}
+.gc-field label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+input[type="text"],
+input[type="date"],
+input[type="time"],
+textarea {
+  width: 100%;
+  padding: var(--gap-sm);
+  border: none;
+  border-radius: var(--radius);
+  background: var(--input-bg);
+  color: #333;
+  font: inherit;
+}
+
+/* fieldset & dua kolom di mobile */
+.gc-fieldset {
+  border: 1px solid var(--white);
+  border-radius: var(--radius);
+  padding: var(--gap-sm);
+  margin-bottom: var(--gap);
+}
+.gc-fieldset legend {
+  font-weight: 700;
+}
+.gc-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-sm);
+}
+.gc-other {
+  margin-top: var(--gap-sm);
+}
+
+/* rating di mobile: ubah jadi list */
+.gc-rating {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--gap);
+}
+.gc-rating thead {
+  display: none;
+}
+.gc-rating tbody tr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: var(--gap-sm) 0;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+.gc-rating td {
+  flex: 1 1 14%;
+  text-align: center;
+}
+.gc-rating td:first-child {
+  flex: 1 1 100%;
+  text-align: left;
+  font-weight: 700;
+  margin-bottom: var(--gap-sm);
+}
+
+/* tombol aksi */
+.gc-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.gold {
+  background: var(--gold);
+  color: var(--white);
+  padding: var(--gap-sm) var(--gap);
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.gold:hover:not(:disabled) {
+  background: var(--gold-dark);
+}
+.gold:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* daftar entri di mobile: ubah jadi kartu */
+.gc-search {
+  width: 100%;
+  padding: var(--gap-sm);
+  margin-bottom: var(--gap-sm);
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  color: #000;
+  font: inherit;
+}
+.gc-list {
+  width: 100%;
+  border-collapse: collapse;
+}
+.gc-list thead {
+  display: none;
+}
+.gc-list tbody tr {
+  display: block;
+  background: rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: var(--gap-sm);
+  margin-bottom: var(--gap);
+}
+.gc-list td {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--gap-sm) 0;
+  font-size: 0.9rem;
+}
+.gc-list td::before {
+  content: attr(data-label);
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+
+/*───────────────────────────────────
+  4. Tablet & Desktop
+───────────────────────────────────*/
+@media (min-width: 768px) {
+  .gc-grid {
+    grid-template-columns: 40% 35% 25%;
+  }
+  .gc-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .gc-buttons button {
+    flex: 1 1 auto;
+  }
+  .gc-list thead {
+    display: table-header-group;
+  }
+  .gc-list,
+  .gc-list th,
+  .gc-list td {
+    display: table;
+  }
+  .gc-list {
+    border-collapse: collapse;
+  }
+  .gc-list th,
+  .gc-list td {
+    border: 1px solid var(--white);
+    padding: 0.5rem;
+    text-align: left;
+  }
+  .gc-rating thead {
+    display: table-header-group;
+  }
+  .gc-rating,
+  .gc-rating th,
+  .gc-rating td {
+    display: table;
+    border: 1px solid var(--white);
+  }
+}
+
+/*───────────────────────────────────
+  5. Modal Laporan
+───────────────────────────────────*/
 .report-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0,0,0,0.7);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 1000;
 }
-
 .report-content {
-  background-color: var(--white);
+  background: var(--white);
   color: #333;
   border-radius: var(--radius);
-  padding: 1rem;
+  padding: var(--gap);
   max-width: 500px;
   width: 90%;
   text-align: center;
-}
-
-/* Sticky table header */
-.table-responsive {
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.table-responsive thead th {
-  position: sticky;
-  top: 0;
-  background-color: #f8f9fa;
-  z-index: 10;
-}
-
-/* Grid desktop */
-@media (min-width: 768px) {
-  .gc-grid {
-    grid-template-columns: 40% 35% 25%;
-  }
-}
-
-@media (min-width: 1024px) {
-  .gc-wrap {
-    padding: calc(var(--spacing) * 1.5);
-  }
 }
