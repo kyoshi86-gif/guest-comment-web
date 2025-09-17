@@ -103,6 +103,8 @@ function validateMinimal(p){
 }
 
 // ====== CRUD ======
+let allData = []; // simpan semua data dari Supabase
+
 async function loadList(){
   const { data, error } = await sb
     .from('guest_comments')
@@ -112,6 +114,39 @@ async function loadList(){
     .limit(200);
 
   if(error){ console.error("Load error:", error.message); return; }
+
+  allData = data || [];
+  renderList(allData);
+
+// fungsi render dengan optional filter
+function renderList(rows){
+  listBody.innerHTML = "";
+  rows.forEach((r, i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${r.tgl ?? ""}</td>
+      <td>${r.jam ?? ""}</td>
+      <td>${r.no_meja ?? ""}</td>
+      <td>${r.nama_tamu ?? ""}</td>`;
+    tr.addEventListener('click', ()=> selectRow(r.id));
+    listBody.appendChild(tr);
+  });
+}
+
+// fungsi filter pencarian
+function setupSearch(){
+  const searchBox = document.getElementById('searchBox');
+  searchBox.addEventListener('input', ()=>{
+    const q = searchBox.value.toLowerCase();
+    const filtered = allData.filter(r=>
+      (r.nama_tamu ?? "").toLowerCase().includes(q) ||
+      (r.no_meja ?? "").toLowerCase().includes(q) ||
+      (r.tgl ?? "").toLowerCase().includes(q)
+    );
+    renderList(filtered);
+  });
+}
 
   listBody.innerHTML = "";
   data.forEach((r, i)=>{
