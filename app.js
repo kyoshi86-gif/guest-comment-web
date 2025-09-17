@@ -253,6 +253,7 @@ function onReport(){ window.open('report.html'); }
 document.addEventListener('DOMContentLoaded', ()=>{
   setupOtherToggle();
   loadList();
+  setupSearch();
 
   btnSave.addEventListener('click', onSave);
   btnUpdate.addEventListener('click', onUpdate);
