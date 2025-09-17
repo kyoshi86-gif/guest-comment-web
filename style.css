@@ -266,3 +266,11 @@ textarea{
   font-size: 16px;
   font-weight: bold;
 }
+
+.gc-search {
+  width: 100%;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
