@@ -158,7 +158,6 @@ textarea{
 .gc-right{
   max-height:600px;
   overflow:auto
-  position: relative;
 }
 
 .gc-footer{
