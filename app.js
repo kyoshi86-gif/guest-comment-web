@@ -81,8 +81,7 @@ function formToPayload(){
 
     age_range: getRadio('age_range'),
 	
-	const v = parseInt(getRadio('food_quality'));
-	food_quality: Number.isNaN(v) ? null : v,
+    food_quality: parseInt(getRadio('food_quality')) || null,
     beverage_quality: parseInt(getRadio('beverage_quality')) || null,
     serving_speed: parseInt(getRadio('serving_speed')) || null,
     service_rating: parseInt(getRadio('service_rating')) || null,
