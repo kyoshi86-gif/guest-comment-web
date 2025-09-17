@@ -271,3 +271,20 @@ textarea {
   width: 90%;
   text-align: center;
 }
+
+/*────────────────────────────
+  BERI PADDING & BACKGROUND 
+  PADA TIAP GRID SECTION
+────────────────────────────*/
+.gc-left,
+.gc-mid,
+.gc-right {
+  background-color: rgba(1, 68, 33, 0.9); /* sama dengan #014421, tapi dikit transparan */
+  padding: var(--gap);                 /* beri ruang dalam */
+  border-radius: var(--radius);
+}
+
+/* PERLEBAR JARAK VERTICAL DI MOBILE */
+.gc-grid {
+  gap: calc(var(--gap) * 1.5);         /* lebih lega di antar section */
+}
