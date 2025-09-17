@@ -377,6 +377,13 @@ function renderBar(canvasId, rating) {
         x: { grid: { display: false } }
       }
     },
+	 // 👇 tambah ini supaya klik bar manapun akan tampil YTD
+      onClick: (evt, elements) => {
+        if (elements.length > 0) {
+          showYTD();
+        }
+      }
+    },
     plugins: [barLabelPlugin]
   };
 
@@ -414,7 +421,7 @@ function renderLineCharts() {
         labels:["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"],
         datasets:[{
           label:cfg.label,
-          data: ytdData.map(r=>r[cfg.field]||0),
+          data: ytdData.map(r=>r[cfg.field] ?? null),
           borderColor:"#4e79a7",
           backgroundColor:"rgba(78,121,167,0.2)",
           fill:true, tension:0.3
@@ -424,3 +431,8 @@ function renderLineCharts() {
     });
   });
 }
+
+document.getElementById("btnBack").addEventListener("click", () => {
+  document.getElementById("ytdSection").style.display = "none";
+  document.getElementById("mainCharts").style.display = "flex"; // atau "block" tergantung layout
+});
