@@ -186,15 +186,24 @@ async function fetchData(startDate, endDate) {
     return;
   }
 
+  // merge hasil query dengan localStorage
   allData = (data || []).map((row) => {
-    row._saved = row.is_saved === true;   // baca dari DB
-    row._checked = row._saved;            // awalnya sama
+    const saved = savedState[row.id];       // baca dari localStorage
+    if (saved !== undefined) {
+      row._saved = saved;
+      row._checked = saved;
+      row.is_saved = saved;
+    } else {
+      row._saved = row.is_saved === true;   // baca dari DB
+      row._checked = row._saved;
+    }
     return row;
   });
 
   renderTable(allData);
   checkSaveButtonVisibility();
 }
+
 
 // --- Event Save ---
 if (saveBtn) {
@@ -243,15 +252,21 @@ if (filterBtn) {
     const endVal = filterEndInput ? filterEndInput.value : "";
 
     if (startVal && endVal) {
-      fetchData(new Date(startVal), new Date(endVal));
+      const startDate = new Date(startVal);
+      const endDate = new Date(endVal);
+
+      if (endDate < startDate) {
+        alert("Tanggal akhir tidak boleh lebih kecil dari tanggal mulai.");
+        return; // hentikan proses
+      }
+
+      fetchData(startDate, endDate);
     } else {
       fetchData();
     }
-
-    if (filterStartInput) filterStartInput.value = "";
-    if (filterEndInput) filterEndInput.value = "";
   });
 }
+
 
 // --- Event Select All ---
 if (selectAllCheckbox) {

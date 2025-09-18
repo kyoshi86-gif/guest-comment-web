@@ -24,6 +24,31 @@
       position: relative;
       height: 420px;
     }
+	/* 🔥 Grid untuk 7 line chart */
+  .grid-charts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 kolom */
+    gap: 20px;
+  }
+
+  .grid-charts > div {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .grid-charts h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .grid-charts canvas {
+    width: 100% !important;
+    height: 260px !important;
+  }
   </style>
 </head>
 <body>
@@ -31,7 +56,8 @@
     <h2 class="mb-4 text-center">📊 Feedback Report</h2>
 
     <!-- Filter Section -->
-    <div class="card mb-4">
+    <div id="mainCharts">
+	<div class="card mb-4">
       <div class="card-header">Filter Data</div>
       <div class="card-body row g-3 align-items-end">
         <div class="col-md-3">
@@ -73,7 +99,7 @@
     </div>
 
     <!-- Chart Section -->
-    <div class="row g-4">
+	<div class="row g-4">
       <div class="col-md-6">
         <div class="card">
           <div class="card-header">Asal Responden</div>
@@ -119,6 +145,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 
 <!-- Year-to-Date Section (awal disembunyikan) --> 

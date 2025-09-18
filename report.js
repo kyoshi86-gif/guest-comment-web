@@ -10,6 +10,9 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const COLORS = ["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f","#edc949","#af7aa1","#ff9da7","#9c755f","#bab0ac"];
 const MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 
+// Store chart instances
+let chartStore = {};
+
 // ----------------- PLUGINS -----------------
 const outlabelsPlugin = {
   id: 'outlabelsPlugin',
@@ -235,17 +238,46 @@ function renderBar(canvasId, rating) {
   return new Chart(canvas, cfg);
 }
 
+// ================== RENDER CHART ==================
 function renderLineChart(canvasId, monthlyArray, cfg) {
-  destroyIfExists(canvasId);
+  // hancurkan chart lama kalau ada
+  if (chartStore[canvasId]) {
+    chartStore[canvasId].destroy();
+    delete chartStore[canvasId];
+  }
+
   const canvas = document.getElementById(canvasId);
   if (!canvas) return null;
-  // monthlyArray must be length 12; pick values (number or null)
-  const values = (monthlyArray || Array.from({length:12}, ()=>({})) ).map(r => {
+
+  const values = (monthlyArray || Array.from({ length: 12 }, () => ({}))).map(r => {
     const v = r[cfg.field];
-    return (v === null || v === undefined) ? null : Number(v);
+    if (v === null || v === undefined || v === "") return null;
+    const num = Number(v);
+    return Number.isFinite(num) ? num : null;
   });
 
-  const cfgChart = {
+	// Plugin untuk kasih label di tiap titik
+  const pointLabelPlugin = {
+    id: 'pointLabelPlugin',
+    afterDatasetsDraw(chart) {
+      const { ctx } = chart;
+      chart.data.datasets.forEach((dataset, i) => {
+        const meta = chart.getDatasetMeta(i);
+        meta.data.forEach((point, index) => {
+          const val = dataset.data[index];
+          if (val === null || val === undefined) return;
+          ctx.save();
+          ctx.fillStyle = "#111";
+          ctx.font = "11px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText(val.toFixed(2), point.x, point.y - 8);
+          ctx.restore();
+        });
+      });
+    }
+  };
+
+  const newChart = new Chart(canvas, {
     type: "line",
     data: {
       labels: MONTHS,
@@ -254,30 +286,46 @@ function renderLineChart(canvasId, monthlyArray, cfg) {
         data: values,
         borderColor: "#4e79a7",
         backgroundColor: "rgba(78,121,167,0.12)",
-        fill: false,       // NO fill -> avoid area drooping
-        spanGaps: false,   // do not connect nulls -> gaps
+        fill: false,
+        spanGaps: false,
         tension: 0.25,
-        pointRadius: 3,
-        pointHoverRadius: 5
+        pointRadius: 4,
+        pointHoverRadius: 6
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       elements: { line: { borderWidth: 2 } },
-      plugins: { legend: { display: false }, title: { display: true, text: cfg.label } },
-      scales: { y: { min: 0, max: 5, ticks: { stepSize: 1 } }, x: { grid: { display: false } } }
-    }
-  };
-  return new Chart(canvas, cfgChart);
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: cfg.label },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return ctx.raw === null ? "N/A" : ctx.raw;
+            }
+          }
+        }
+      },
+      scales: {
+        y: { min: 0, max: 5, ticks: { stepSize: 1 } },
+        x: { grid: { display: false } }
+      }
+    },
+	 plugins: [pointLabelPlugin]
+  });
+
+  chartStore[canvasId] = newChart;   // simpan instance chart
+  return newChart;
 }
+
 
 // ----------------- MAIN: loadReport & showYTD -----------------
 async function loadTahun() {
   try {
     const res = await supabase.from("v_feedback_report").select("tahun").order("tahun", { ascending: false });
-    const sel = document.getElementById("tahun");
-    sel.innerHTML = "";
+    const sel = document.getElementById("tahun"); sel.innerHTML = "";
     const currentYear = new Date().getFullYear();
     if (!res || res.error || !res.data || res.data.length === 0) {
       const opt = document.createElement("option"); opt.value = currentYear; opt.textContent = currentYear; sel.appendChild(opt);
@@ -304,8 +352,7 @@ function setDefaultFilters() {
     if (!found) { const o = document.createElement("option"); o.value = cy; o.textContent = cy; selT.insertBefore(o, selT.firstChild); }
     selT.value = cy;
   }
-  const selB = document.getElementById("bulan");
-  if (selB) selB.value = cm;
+  const selB = document.getElementById("bulan"); if (selB) selB.value = cm;
 }
 
 function toggleFilters(disable) {
@@ -385,14 +432,15 @@ function renderCharts(data) {
     usiaData = objToArray(data[0].usia_count);
 
     const rating = {
-      avg_food_quality: data[0].avg_food_quality ?? 0,
-      avg_beverage_quality: data[0].avg_beverage_quality ?? 0,
-      avg_serving_speed: data[0].avg_serving_speed ?? 0,
-      avg_service: data[0].avg_service ?? 0,
-      avg_cleanliness: data[0].avg_cleanliness ?? 0,
-      avg_ambience: data[0].avg_ambience ?? 0,
-      avg_price: data[0].avg_price ?? 0
+      avg_food_quality: data[0].avg_food_quality ?? null,
+      avg_beverage_quality: data[0].avg_beverage_quality ?? null,
+      avg_serving_speed: data[0].avg_serving_speed ?? null,
+      avg_service: data[0].avg_service ?? null,
+      avg_cleanliness: data[0].avg_cleanliness ?? null,
+      avg_ambience: data[0].avg_ambience ?? null,
+      avg_price: data[0].avg_price ?? null
     };
+
     pieAsal = renderPie("pieAsal", "Asal", asalData);
     pieMedia = renderPie("pieMedia", "Media Sosial", mediaData);
     pieAcara = renderPie("pieAcara", "Acara", acaraData);
@@ -413,13 +461,13 @@ function renderCharts(data) {
     // compute overall aggregated rating for the selected filter (tahun+bulan)
     const agg = computeOverallRatings(data);
     const rating = {
-      avg_food_quality: agg.avg_food_quality ?? 0,
-      avg_beverage_quality: agg.avg_beverage_quality ?? 0,
-      avg_serving_speed: agg.avg_serving_speed ?? 0,
-      avg_service: agg.avg_service ?? 0,
-      avg_cleanliness: agg.avg_cleanliness ?? 0,
-      avg_ambience: agg.avg_ambience ?? 0,
-      avg_price: agg.avg_price ?? 0
+      avg_food_quality: agg.avg_food_quality ?? null,
+      avg_beverage_quality: agg.avg_beverage_quality ?? null,
+      avg_serving_speed: agg.avg_serving_speed ?? null,
+      avg_service: agg.avg_service ?? null,
+      avg_cleanliness: agg.avg_cleanliness ?? null,
+      avg_ambience: agg.avg_ambience ?? null,
+      avg_price: agg.avg_price ?? null
     };
     barRating = renderBar("barRating", rating);
   }
@@ -440,8 +488,9 @@ async function showYTD() {
     // Re-aggregate per month into exactly 12 rows
     const monthly = aggregateMonthlyFromView(res.data || []);
     ytdData = monthly; // store for potential debugging
+    console.debug("[YTD] monthly aggregated:", monthly);
 
-    // toggle UI
+    // toggle UI: if #mainCharts not present, just show ytdSection
     const main = document.getElementById("mainCharts");
     const ytd = document.getElementById("ytdSection");
     const container = document.getElementById("lineChartsContainer");
@@ -450,13 +499,13 @@ async function showYTD() {
     if (container) container.style.display = "grid";
 
     // render 7 line charts (IDs in report.html: chart_food, chart_beverage, ...)
-    renderLineChart("chart_food", monthly, { label: "Food Quality", field: "avg_food_quality" });
-    renderLineChart("chart_beverage", monthly, { label: "Beverage", field: "avg_beverage_quality" });
-    renderLineChart("chart_speed", monthly, { label: "Serving Speed", field: "avg_serving_speed" });
-    renderLineChart("chart_service", monthly, { label: "Service", field: "avg_service" });
-    renderLineChart("chart_cleanliness", monthly, { label: "Cleanliness", field: "avg_cleanliness" });
-    renderLineChart("chart_ambience", monthly, { label: "Ambience", field: "avg_ambience" });
-    renderLineChart("chart_price", monthly, { label: "Price", field: "avg_price" });
+    renderLineChart("chart_food", monthly, { label: "", field: "avg_food_quality" });
+    renderLineChart("chart_beverage", monthly, { label: "", field: "avg_beverage_quality" });
+    renderLineChart("chart_speed", monthly, { label: "", field: "avg_serving_speed" });
+    renderLineChart("chart_service", monthly, { label: "", field: "avg_service" });
+    renderLineChart("chart_cleanliness", monthly, { label: "", field: "avg_cleanliness" });
+    renderLineChart("chart_ambience", monthly, { label: "", field: "avg_ambience" });
+    renderLineChart("chart_price", monthly, { label: "", field: "avg_price" });
 
   } catch (err) {
     console.error("showYTD exception:", err);
@@ -475,14 +524,44 @@ document.addEventListener("DOMContentLoaded", async () => {
   const endDate = document.getElementById("endDate");
   const btnBack = document.getElementById("btnBack");
 
+  // 🔹 Klik Proses hanya reload data
   if (btnProses) btnProses.addEventListener("click", loadReport);
+
   if (btnReset) btnReset.addEventListener("click", resetFilters);
   if (startDate) startDate.addEventListener("change", handleDateChange);
   if (endDate) endDate.addEventListener("change", handleDateChange);
-  if (btnBack) btnBack.addEventListener("click", () => {
-    const main = document.getElementById("mainCharts");
-    const ytd = document.getElementById("ytdSection");
-    if (ytd) ytd.style.display = "none";
-    if (main) main.style.display = "block";
-  });
+
+  // 🔹 Klik Kembali
+  if (btnBack) {
+    btnBack.addEventListener("click", () => {
+      const main = document.getElementById("mainCharts");
+      const ytd = document.getElementById("ytdSection");
+
+      if (ytd) ytd.style.display = "none";
+      if (main) {
+        main.style.display = "block";
+        main.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
+
+  // 🔹 Klik chart Rating Rata-rata untuk buka YTD
+  const ratingCanvas = document.getElementById("barRating");
+  if (ratingCanvas) {
+    ratingCanvas.addEventListener("click", async () => {
+      const main = document.getElementById("mainCharts");
+      const ytd = document.getElementById("ytdSection");
+
+      if (main) main.style.display = "none";
+      if (ytd) {
+        ytd.style.display = "flex";
+
+        // 🔥 Pastikan fungsi showYTD dipanggil untuk render 7 chart
+        await showYTD();
+
+        // scroll ke atas section YTD
+        ytd.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
 });
