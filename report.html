@@ -121,6 +121,31 @@
     </div>
   </div>
 
+<!-- Year-to-Date Section (awal disembunyikan) --> 
+<div id="ytdSection" class="row g-4" style="display:none;"> 
+   <div class="col-md-12"> 
+      <div class="card"> 
+         <div class="card-header d-flex justify-content-between"> 
+            <span>📈 Grafik Year-to-Date Rating</span> 
+               <button class="btn btn-sm btn-secondary" id="btnBack">⬅ Kembali</button> 
+         </div> 
+            <div class="card-body"> 
+
+<!-- Grid 7 chart line --> 
+               <div id="lineChartsContainer" class="grid-charts"> 
+                  <div><h3>Food Quality</h3><canvas id="chart_food"></canvas></div>
+                  <div><h3>Beverage Quality</h3><canvas id="chart_beverage"></canvas></div>
+                  <div><h3>Serving Speed</h3><canvas id="chart_speed"></canvas></div> 
+                  <div><h3>Service</h3><canvas id="chart_service"></canvas></div> 
+                  <div><h3>Cleanliness</h3><canvas id="chart_cleanliness"></canvas></div> 
+				  <div><h3>Ambience</h3><canvas id="chart_ambience"></canvas></div> 
+				  <div><h3>Price</h3><canvas id="chart_price"></canvas></div> 
+				</div> 
+			</div> 
+		</div> 
+	</div> 
+</div>
+
   <!-- Report Script -->
   <script type="module" src="report.js"></script>
 </body>
