@@ -10,7 +10,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const COLORS = ["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f","#edc949","#af7aa1","#ff9da7","#9c755f","#bab0ac"];
 const MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 
-// ----------------- PLUGINS ----------------
+// ----------------- PLUGINS -----------------
 const outlabelsPlugin = {
   id: 'outlabelsPlugin',
   afterDraw(chart) {
