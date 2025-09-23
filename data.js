@@ -1,4 +1,4 @@
-// data.js (fix realtime sinkron antar device + batch update cepat)
+// data.js (fix realtime sinkron antar device)
 import { supabase } from "./supabaseClient.js"
 import { checkAuth, logout } from "./base.js";
 
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     checkSaveButtonVisibility();
   }
 
-  // --- Save (batch update cepat) ---
+  // --- Save ---
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
       const rows = tableBody.querySelectorAll("tr");
@@ -139,23 +139,19 @@ document.addEventListener("DOMContentLoaded", () => {
       updateSelectAllState();
       checkSaveButtonVisibility();
 
-      // 🔹 Ambil hanya ID yang berubah
-      const changedIdsTrue = allData.filter(r => r._checked && !r.is_saved).map(r => r.id);
-      const changedIdsFalse = allData.filter(r => !r._checked && r.is_saved).map(r => r.id);
+      // 🔹 Update hanya kolom is_saved
+      for (const r of allData) {
+        const { error } = await supabase
+          .from("guest_comments")
+          .update({ is_saved: r.is_saved })
+          .eq("id", r.id);
 
-      try {
-        if (changedIdsTrue.length > 0) {
-          await supabase.from("guest_comments").update({ is_saved: true }).in("id", changedIdsTrue);
+        if (error) {
+          console.error("Update gagal untuk id:", r.id, error);
         }
-        if (changedIdsFalse.length > 0) {
-          await supabase.from("guest_comments").update({ is_saved: false }).in("id", changedIdsFalse);
-        }
-        alert("Perubahan disimpan");
-        console.log("Update selesai (batch)");
-      } catch (err) {
-        console.error("Update gagal:", err);
-        alert("Gagal menyimpan perubahan");
       }
+      alert("Perubahan disimpan");
+      console.log("Update selesai");
     });
   }
 
@@ -203,7 +199,8 @@ document.addEventListener("DOMContentLoaded", () => {
     exportBtn.addEventListener("click", () => {
       if (typeof XLSX === "undefined") { alert("Library XLSX tidak ditemukan."); return; }
       const rows = [["Tanggal","Jam","No Meja","Nama","Asal","Media Sosial","Media Lainnya","Acara","Acara Lainnya","Usia","Food Quality","Beverage Quality","Serving Speed","Service","Cleanliness","Ambience","Price","Comments"],
-        ...allData.map(r => [formatDate(r.tgl),r.jam??"",r.no_meja??"",r.nama_tamu??"",r.asal??"",r.media_source??"",r.media_other??"",r.event_type??"",r.event_other??"",r.age_range??"",r.food_quality??"",r.beverage_quality??"",r.serving_speed??"",r.service_rating??"",r.cleanliness??"",r.ambience??"",r.price_rating??"",r.comments??""])];
+        ...allData.map(r => [formatDate(r.tgl),r.jam??"",r.no_meja??"",r.nama_tamu??"",r.asal??"",r.media_source??"",r.media_other??"",r.event_type??"",r.event_other??"",r.age_range??"",r.food_quality??"",r.beverage_quality??"",r.serving_speed??"",r.service_rating??"",r.cleanliness??"",r.ambience??"",r.price_rating??"",r.comments??""])
+      ];
       const ws = XLSX.utils.aoa_to_sheet(rows);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Guest Comments");
