@@ -3,32 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <title>Guest Card</title>
-  <!-- Jika file ada di root folder yang sama, gunakan "style.css".
-       Jika kamu menaruh file di folder /public (Vercel), gunakan "/style.css". -->
   <link rel="stylesheet" href="style.css" />
-  <!-- Supabase client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
- 
-
-  <!-- Chart.js untuk report -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- App logic -->
   <script defer src="app.js"></script>
 </head>
 <body>
+	<script type="module">
+    import { checkAuth } from "./base.js"
+    await checkAuth()
+    document.body.style.display = "block"
+	</script>
+  
   <div class="gc-wrap">
 
-    <!-- Header Gold -->
+    <!-- Header -->
     <div class="gc-header">
       <div class="gc-logo">ROASTER &amp; BEAR</div>
+	  <button id="logout" class="logout-btn">Logout</button>
     </div>
 
-    <!-- Grid 3 kolom: kiri (identitas), tengah (rating & komentar), kanan (tabel data) -->
+    <!-- Grid -->
     <form id="gcForm" class="gc-grid">
+      
       <!-- ====== KIRI ====== -->
       <section class="gc-left">
-        <!-- Baris tanggal, jam, meja -->
         <div class="gc-row3">
           <div class="gc-field">
             <label for="tgl">Tanggal</label>
@@ -44,7 +43,6 @@
           </div>
         </div>
 
-        <!-- Nama -->
         <div class="gc-field">
           <label for="nama_tamu">Nama</label>
           <input type="text" id="nama_tamu" required />
@@ -65,13 +63,13 @@
             <label><input type="radio" name="media_source" value="Instagram" checked /> Instagram</label>
             <label><input type="radio" name="media_source" value="Rekomendasi Teman" /> Rekomendasi Teman</label>
             <label><input type="radio" name="media_source" value="Tiktok" /> Tiktok</label>
-			<label><input type="radio" name="media_source" value="Lainnya" id="mediaLainnyaRadio" /> Lainnya</label>
+			      <label><input type="radio" name="media_source" value="Lainnya" id="mediaLainnyaRadio" /> Lainnya</label>
             <label><input type="radio" name="media_source" value="Google" /> Google</label>
           </div>
           <input class="gc-other" type="text" id="media_other" placeholder="Isi jika memilih Lainnya" disabled />
         </fieldset>
 
-        <!-- 3. Acara di Roaster and Bear -->
+        <!-- 3. Acara -->
         <fieldset class="gc-fieldset">
           <legend>3. Acara di Roaster and Bear</legend>
           <div class="gc-two-col">
@@ -85,7 +83,7 @@
           <input class="gc-other" type="text" id="event_other" placeholder="Isi jika memilih Lainnya" disabled />
         </fieldset>
 
-        <!-- 4. Rentang Usia -->
+        <!-- 4. Usia -->
         <fieldset class="gc-fieldset">
           <legend>4. Rentang Usia</legend>
           <div class="gc-two-col">
@@ -100,7 +98,7 @@
         <input type="hidden" id="row_id" />
       </section>
 
-      <!-- ====== TENGAH (RATING + KOMENTAR + TOMBOL) ====== -->
+      <!-- ====== TENGAH ====== -->
       <section class="gc-mid">
         <table class="gc-rating">
           <thead>
@@ -173,9 +171,9 @@
           </tbody>
         </table>
 
-        <div class="gc-field">
+        <div class="gc-field-comment">
           <label for="comments">Others comment or suggestions ?</label>
-          <textarea id="comments" rows="14"></textarea>
+          <textarea id="comments" rows="13"></textarea>
         </div>
 
         <div class="gc-buttons">
@@ -183,16 +181,15 @@
           <button type="button" id="btnUpdate" class="gold" disabled>Update</button>
           <button type="button" id="btnDelete" class="gold" disabled>Delete</button>
           <button type="button" id="btnCancel" class="gold">Cancel</button>
-          <button type="button" id="btnClose"  class="gold">Close</button>
-		  <button type="button" id="btnReport" class="gold" >Report</button>
+		  <button type="button" id="btnReport" class="report-btn" >Report</button>
         </div>
 		
       </section>
 
-      <!-- ====== KANAN (TABEL DATA) ====== -->
+      <!-- ====== KANAN ====== -->
       <aside class="gc-right">
         <input type="text" id="searchBox" placeholder="Cari Nama / Meja / Tanggal..." class="gc-search" />
-		<table class="gc-list">
+		    <table class="gc-list">
           <thead>
             <tr>
               <th>No</th>
@@ -208,17 +205,14 @@
 		
     </form>
 	
-	<!-- Modal Report -->
-<div id="reportModal" class="report-modal" style="display:none;">
-  <div class="report-content">
-    <h2>Laporan Media Sosial</h2>
-    <canvas id="reportChart" width="400" height="400"></canvas>
-    <button class="gold" onclick="closeReport()">Tutup</button>
-  </div>
-</div>
 
-	
     <div class="gc-footer">Versi 1.2</div>
   </div>
+
+  <script type="module">
+    import { checkAuth, logout } from "./base.js"
+    checkAuth()
+    document.getElementById("logout").onclick = logout
+  </script>
 </body>
 </html>

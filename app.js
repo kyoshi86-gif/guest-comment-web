@@ -260,9 +260,7 @@ async function onDelete() {
 function onCancel() {
   clearForm();
 }
-function onClose() {
-  window.close();
-}
+
 function onReport() {
   window.open("report.html");
 }
@@ -277,6 +275,5 @@ document.addEventListener("DOMContentLoaded", () => {
   btnUpdate.addEventListener("click", onUpdate);
   btnDelete.addEventListener("click", onDelete);
   btnCancel.addEventListener("click", onCancel);
-  btnClose.addEventListener("click", onClose);
   btnReport.addEventListener("click", onReport);
 });

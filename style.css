@@ -1,8 +1,8 @@
 :root{
-  --green:#0b3a1d;      /* hijau gelap background */
-  --gold:#b9915b;       /* emas tombol/header */
+  --green:#0b3a1d;
+  --gold:#b9915b;
   --gold-dark:#9f7a41;
-  --input:#f5e6cc;      /* krem untuk field */
+  --input:#f5e6cc;
   --white:#ffffff;
 }
 
@@ -15,42 +15,22 @@ body{
   width: 97vw;
 }
 
-/* Container utama */
-.container {
-  width: 100%;
-  height: 100%;
-  max-width: 100vw;
-  max-height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr 1fr 0.6fr; /* kiri form, tengah rating, kanan tabel */
-  grid-template-rows: auto 1fr auto;   /* header, isi, footer tombol */
-  gap: 10px;
-  box-sizing: border-box;
-  padding: 10px;
-  overflow: hidden;
-}
-
-/* Supaya isi form dan tabfel bisa discroll internal */
-.form-section, .rating-section, .table-section {
-  background: #014421;
-  border-radius: 8px;
-  padding: 10px;
-  overflow: auto;   /* kalau konten panjang, scroll hanya di dalam box */
-  box-sizing: border-box;
-}
-
 .gc-wrap{padding:6px}
 
 .gc-header{
-  height:54px;
-  background:var(--gold);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:4px;
-  margin:6px 6px 10px;
+  height: 40px;
+  background: var(--gold);
+  font-size: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* logo kiri, tombol kanan */
+  border-radius: 4px;
+  margin: 6px 6px 10px;
+  padding: 0 12px;
+  position: flex; 
+  top: 0;
 }
-.gc-logo{font-weight:700; letter-spacing:3px;}
+.gc-logo{font-weight:700; letter-spacing:5px;}
 
 .gc-grid{
   display:grid;
@@ -69,8 +49,10 @@ body{
   gap:10px;
 }
 
-.gc-field{margin:8px 0}
-.gc-field label{display:block; margin-bottom:4px; font-weight:700}
+.gc-field-comment{margin: 34px 0}
+.gc-field-comment label{display:block; margin-bottom: 10px}
+.gc-field{margin:px 0}
+.gc-field label{display:block; margin-bottom:5px; font-weight:700}
 
 input[type="text"],
 input[type="date"],
@@ -94,10 +76,7 @@ textarea{
 .gc-fieldset legend{font-weight:700}
 .gc-fieldset label{display:block; min-width:180px; margin:3px 6px 3px 0}
 
-.gc-other{
-  width:100%;
-  margin-top:8px;
-}
+.gc-other{width:100%; margin-top:8px;}
 
 .gc-two-col{
   display:grid;
@@ -117,7 +96,7 @@ textarea{
 
 .gc-buttons{
   display:flex; 
-  gap:14px; 
+  gap:25px; 
   flex-wrap:wrap; 
   justify-content:flex-start;
   margin-top:6px;
@@ -132,32 +111,25 @@ textarea{
   border-radius:4px;
   cursor:pointer;
 }
-.gold:disabled{
-  opacity:.6; cursor:not-allowed;
-}
-.gold:hover:not(:disabled){
-  background:var(--gold-dark);
-}
+.gold:disabled{opacity:.6; cursor:not-allowed;}
+.gold:hover:not(:disabled){background:var(--gold-dark);}
 
 .gc-right{
   background:#fff1;
   border:1px solid #fff5;
   border-radius:4px;
   padding:6px;
+  max-height:670px;
+  overflow:auto
 }
 .gc-list{
   width:100%;
   border-collapse:collapse;
-  background:transparent;
 }
 .gc-list th,.gc-list td{
   border:1px solid var(--white);
   padding:4px 6px;
   text-align:left;
-}
-.gc-right{
-  max-height:600px;
-  overflow:auto
 }
 
 .gc-footer{
@@ -167,24 +139,7 @@ textarea{
   font-size:12px;
 }
 
-.gc-close-wrap {
-  display: flex;
-  justify-content: flex-start; /* tombol di kiri */
-  margin-top: 10px;
-}
-.gc-close-wrap .gold {
-  background: var(--gold);
-  border: none;
-  color: #fff;
-  font-weight: 700;
-  padding: 6px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.gc-close-wrap .gold:hover {
-  background: var(--gold-dark);
-}
-
+/* Modal */
 .report-modal {
   position: fixed;
   top:0; left:0; right:0; bottom:0;
@@ -204,77 +159,11 @@ textarea{
   width: 90%;
 }
 
-.page.hidden {
-  display: none;
-}
-
-.report-container {
-  display: flex;
-  height: 100vh;
-  background: white;
-}
-
-.sidebar {
-  width: 200px;
-  background: #12491d; /* hijau tua */
-  color: white;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sidebar label {
-  font-size: 14px;
-  margin-top: 5px;
-}
-
-.sidebar select,
-.sidebar input {
-  padding: 3px;
-}
-
-.btn-proses {
-  background: red;
-  color: white;
-  padding: 5px;
-  border: none;
-  cursor: pointer;
-}
-.btn-reset, .btn-gray {
-  background: #ccc;
-  color: black;
-  padding: 5px;
-  border: none;
-  cursor: pointer;
-}
-
-.charts {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-gap: 15px;
-  padding: 10px;
-}
-
-.chart-item {
-  background: #fff;
-  border: 1px solid #ddd;
-  padding: 5px;
-  text-align: center;
-}
-
-.chart-item h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: bold;
-}
-
 .gc-search {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: #fff;   /* biar tidak tembus konten di belakang */
+  background: #fff;
   color: #000;
   padding: 6px 10px;
   margin-bottom: 8px;
@@ -282,15 +171,134 @@ textarea{
   border-radius: 4px;
 }
 
-.table-responsive {
-  max-height: 70vh; /* batasi tinggi tabel supaya bisa discroll */
-  overflow-y: auto;
+/* === RESPONSIVE === */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .gc-grid {
+    grid-template-columns: 45% 55%;
+    grid-template-areas:
+      "left mid"
+      "right right";
+  }
+  .gc-left { grid-area: left; }
+  .gc-mid  { grid-area: mid; }
+  .gc-right{ grid-area: right; }
 }
 
-/* freeze header */
-#dataTable thead th {
-  position: sticky;
-  top: 0;
-  z-index: 10;         /* pastikan di atas isi tabel */
-  background: #f8f9fa; /* warna latar biar tidak tembus isi */
+/* HP Portrait */
+@media (max-width: 768px) {
+  .gc-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "left"
+      "mid"
+      "right";
+  }
+
+  .gc-left,
+  .gc-mid,
+  .gc-right {
+    padding: 8px;
+    border: none;
+  }
+
+  .gc-field,
+  .gc-fieldset {
+    margin: 6px 0;
+    padding: 6px;
+  }
+
+  .gc-rating {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .gc-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .gc-buttons .gold {
+    width: 100%;
+    text-align: center;
+  }
+
+  .gc-right {
+    max-height: 300px;
+    font-size: 12px;
+  }
+  .gc-list th, .gc-list td {
+    padding: 3px 4px;
+  }
+
+  .gc-row3 {
+    grid-template-columns: 1fr;
+  }
+
+  /* === Chart Styling di HP === */
+  .chart-container {
+    width: 100% !important;
+    margin-bottom: 16px;
+  }
+  canvas {
+    max-width: 100% !important;
+    margin: 0 auto;
+  }
+
+  /* Pie chart lebih kecil biar label terbaca */
+  .pie-chart {
+    max-width: 260px !important;
+    margin: 0 auto;
+  }
+
+  /* Year-to-date charts ditumpuk ke bawah */
+  .grid-charts {
+   
+    grid-template-columns: repeat(1, 1fr); /* 3 kolom */
+    gap: 20px;
+  }
+
+  /* Grafik rating rata-rata dilebarkan full */
+  .chart-rating {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+.logout-btn {
+  background: #e63946;
+  position: flex;
+  right: 30px;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+.logout-btn:hover {
+  background: #c1121f;
+  transform: translateY(-2px);
+}
+
+.report-btn {
+  background: linear-gradient(135deg, #06d6a0, #118ab2);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+.report-btn:hover {
+  background: linear-gradient(135deg, #118ab2, #073b4c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
 }

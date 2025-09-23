@@ -1,17 +1,17 @@
-// report.js (REPLACE ALL with this)
-import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-// Supabase config - jangan ubah kecuali perlu
-const supabaseUrl = "https://drdflrzsvfakdnhqniaa.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from "./supabaseClient.js"
+import { checkAuth, logout } from "./base.js";
+
+checkAuth();
+document.getElementById("logout").onclick = logout;
+
+
 
 // Constants
 const COLORS = ["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f","#edc949","#af7aa1","#ff9da7","#9c755f","#bab0ac"];
 const MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 
-// Store chart instances
-let chartStore = {};
+ 
 
 // ----------------- PLUGINS -----------------
 const outlabelsPlugin = {
@@ -72,6 +72,7 @@ const barLabelPlugin = {
 // ----------------- GLOBALS -----------------
 let pieAsal, pieMedia, pieAcara, pieUsia, barRating;
 let ytdData = []; // will hold monthly aggregated array (length 12)
+let chartStore = {};
 
 // ----------------- HELPERS -----------------
 function destroyIfExists(canvasId) {
