@@ -201,7 +201,7 @@ function renderPie(canvasId, title, dataset) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      layout: { padding: { top: 20, bottom: 40 } },
+      layout: { padding: { top: 40, bottom: 40, left: 50, right: 50 } },
       plugins: { legend: { display: false }, title: { display: false, text: title } }
     },
     plugins: [outlabelsPlugin]
@@ -225,14 +225,26 @@ function renderBar(canvasId, rating) {
   ];
   const cfg = {
     type: 'bar',
-    data: { labels, datasets: [{ label: 'Average', data: dataVals, backgroundColor: COLORS.slice(0, labels.length) }] },
+    data: {
+      labels,
+      datasets: [{
+        label: 'Average',
+        data: dataVals,
+        backgroundColor: COLORS.slice(0, labels.length),
+        // 🔥 pasang di dataset, bukan di scales.x
+        barPercentage: 1,
+        categoryPercentage: 0.8,
+      }]
+    },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      layout: { padding: 20 },
+      layout: { padding: 10 },
       plugins: { legend: { display: false }, tooltip: { enabled: true } },
-      scales: { y: { min: 0, max: 5, ticks: { stepSize: 1 } }, x: { grid: { display: false } } },
-      onClick: (evt, elements) => { if (elements && elements.length > 0) showYTD(); }
+      scales: {
+        y: { min: 0, max: 5, ticks: { stepSize: 1 } },
+        x: { grid: { display: false } }
+      }
     },
     plugins: [barLabelPlugin]
   };

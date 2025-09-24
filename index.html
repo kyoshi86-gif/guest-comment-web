@@ -6,14 +6,9 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script defer src="/app.js"></script>
+  <script type="module" src="/src/app.js"></script>
 </head>
 <body>
-	<script type="module">
-    import { checkAuth } from "./base.js"
-    await checkAuth()
-    document.body.style.display = "block"
-	</script>
   
   <div class="gc-wrap">
 
@@ -208,11 +203,5 @@
 
     <div class="gc-footer">Versi 1.2</div>
   </div>
-
-  <script type="module">
-    import { checkAuth, logout } from "./base.js"
-    checkAuth()
-    document.getElementById("logout").onclick = logout
-  </script>
 </body>
 </html>

@@ -1,8 +1,9 @@
-// ====== KONFIGURASI SUPABASE ======
-const SUPABASE_URL = "https://drdflrzsvfakdnhqniaa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGZscnpzdmZha2RuaHFuaWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODY5MDAsImV4cCI6MjA3MTE2MjkwMH0.I88GG5xoPsO0h5oXBxPt58rfuxIqNp7zQS7jvexXss8";
+// src/app.js
+import { supabase } from "./supabaseClient.js"
+import { checkAuth, logout } from "./base.js";
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+checkAuth();
+document.getElementById("logout").onclick = logout;
 
 // ====== ELEMEN DOM ======
 const form = document.getElementById("gcForm");
@@ -107,7 +108,7 @@ function validateMinimal(p) {
 let allData = [];
 
 async function loadList() {
-  const { data, error } = await sb
+  const { data, error } = await supabase
     .from("guest_comments")
     .select("id,tgl,jam,no_meja,nama_tamu")
     .order("tgl", { ascending: false })
@@ -154,7 +155,7 @@ function setupSearch() {
 }
 
 async function selectRow(id) {
-  const { data, error } = await sb
+  const { data, error } = await supabase
     .from("guest_comments")
     .select("*")
     .eq("id", id)
@@ -206,7 +207,7 @@ async function onSave() {
 
   delete payload.id;
 
-  const { error } = await sb.from("guest_comments").insert([payload]);
+  const { error } = await supabase.from("guest_comments").insert([payload]);
   if (error) {
     alert("Gagal simpan: " + error.message);
     return;
@@ -226,7 +227,7 @@ async function onUpdate() {
   const payload = formToPayload();
   if (!validateMinimal(payload)) return;
 
-  const { error } = await sb.from("guest_comments").update(payload).eq("id", id);
+  const { error } = await supabase.from("guest_comments").update(payload).eq("id", id);
   if (error) {
     alert("Gagal update: " + error.message);
     return;
@@ -245,7 +246,7 @@ async function onDelete() {
   }
   if (!confirm("Yakin hapus data ini?")) return;
 
-  const { error } = await sb.from("guest_comments").delete().eq("id", id);
+  const { error } = await supabase.from("guest_comments").delete().eq("id", id);
   if (error) {
     alert("Gagal hapus: " + error.message);
     return;

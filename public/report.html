@@ -26,12 +26,7 @@
       position: relative;
       height: 420px;
     }
-	/* 🔥 Grid untuk 7 line chart */
-  .grid-charts {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 kolom */
-    gap: 20px;
-  }
+	
 
   .grid-charts > div {
     background: #fff;
@@ -148,7 +143,7 @@
         <div class="card">
           <div class="card-header">Rating Rata-rata</div>
           <div class="card-body chart-container">
-            <canvas id="barRating"></canvas>
+            <canvas id="barRating" classq="chart-rating"></canvas>
           </div>
         </div>
       </div>
