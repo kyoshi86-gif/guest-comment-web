@@ -1,4 +1,4 @@
-// data.js (fix realtime sinkron antar device)
+
 import { supabase } from "./supabaseClient.js"
 import { checkAuth, logout } from "./base.js";
 

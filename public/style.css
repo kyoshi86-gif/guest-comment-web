@@ -171,6 +171,13 @@ textarea{
   border-radius: 4px;
 }
 
+/* 🔥 Grid untuk 7 line chart */
+  .grid-charts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 kolom */
+    gap: 20px;
+  }
+
 /* === RESPONSIVE === */
 
 /* Tablet */
@@ -255,15 +262,15 @@ textarea{
 
   /* Year-to-date charts ditumpuk ke bawah */
   .grid-charts {
-   
-    grid-template-columns: repeat(1, 1fr); /* 3 kolom */
-    gap: 20px;
+    grid-template-columns: 1fr; 
+    gap: 16px;
   }
 
   /* Grafik rating rata-rata dilebarkan full */
   .chart-rating {
     width: 100% !important;
     max-width: none !important;
+	height: 320px !important;
   }
 }
 
