@@ -65,5 +65,5 @@ async function login() {
   localStorage.setItem("supabase.auth.token", JSON.stringify(data.session))
   localStorage.setItem("user_role", roleData.role)
 
-  window.location.href = "/index"
+  window.location.href = "/index.html"
 }
