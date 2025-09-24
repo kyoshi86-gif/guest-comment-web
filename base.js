@@ -8,7 +8,7 @@ async function checkAuth() {
   const { data } = await supabase.auth.getSession()
 
   if (!data.session) {
-    window.location.href = "login.html"
+    window.location.href = "/login.html"
     return Promise.reject("Not logged in")
   }
 
