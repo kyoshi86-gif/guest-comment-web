@@ -21,9 +21,14 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       width: 320px;
+      text-align: center;
+    }
+    .login-box img {
+      width: 150px;
+      height: auto;
+      margin-bottom: 1rem;
     }
     .login-box h2 {
-      text-align: center;
       margin-bottom: 1rem;
     }
     input[type="email"], input[type="password"] {
@@ -55,6 +60,8 @@
 </head>
 <body>
   <div class="login-box">
+    <!-- Pastikan file ini ada di folder public/robe_login.png -->
+	<img src="/Robe_logo.jpeg" alt="Roaster&Bear" style="width:80px; height:auto; border-radius:20%" />
     <h2>Login</h2>
     <input type="email" id="email" placeholder="Email" required />
     <input type="password" id="password" placeholder="Password" required />

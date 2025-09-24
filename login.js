@@ -10,7 +10,17 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 document.addEventListener("DOMContentLoaded", () => {
   const btnLogin = document.getElementById("btnLogin")
+
+  // Klik tombol login
   btnLogin.addEventListener("click", login)
+
+  // Tekan Enter = klik tombol login
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      btnLogin.click()
+    }
+  })
 })
 
 async function login() {
@@ -51,10 +61,9 @@ async function login() {
     return
   }
 
-// Simpan session di localStorage
+  // Simpan session di localStorage
   localStorage.setItem("supabase.auth.token", JSON.stringify(data.session))
-
-
   localStorage.setItem("user_role", roleData.role)
+
   window.location.href = "index.html"
 }
