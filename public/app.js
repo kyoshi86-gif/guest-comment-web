@@ -262,7 +262,7 @@ function onCancel() {
 }
 
 function onReport() {
-  window.open("/report.html");
+  window.open("report.html");
 }
 
 // ====== INIT ======
